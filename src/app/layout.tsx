@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree, Newsreader } from "next/font/google";
+import { Footer } from "@/components/Footer";
+import { Navbar } from "@/components/Navbar";
 import { TripProvider } from "@/components/TripProvider";
 import "./globals.css";
 
@@ -16,9 +18,12 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Azure Skyland — Private journeys in Mongolia",
+  title: {
+    default: "Nomad Atlas — Private journeys in Mongolia",
+    template: "%s · Nomad Atlas",
+  },
   description:
-    "Azure Skyland plans private 4x4 expeditions, ger camps, and nomad homestays across Mongolia’s Gobi, Altai, central grasslands, and northern lakes.",
+    "Nomad Atlas plans private 4x4 expeditions, ger camps, and nomad homestays across Mongolia’s Gobi, Altai, central grasslands, and northern lakes.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -29,12 +34,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-paper text-ink">
         <a
-          href="#destinations"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-azure focus:px-4 focus:py-2 focus:text-paper"
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[80] focus:rounded-full focus:bg-azure focus:px-4 focus:py-2 focus:text-paper"
         >
-          Skip to destinations
+          Skip to content
         </a>
-        <TripProvider>{children}</TripProvider>
+        <TripProvider>
+          <Navbar />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </TripProvider>
       </body>
     </html>
   );

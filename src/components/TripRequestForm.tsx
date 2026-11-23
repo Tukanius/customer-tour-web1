@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { destinations, MONTHS } from "@/data/tours";
+import { destinations, tours, vehicles } from "@/data/travelData";
+import { MONTHS } from "@/lib/format";
 import { useTrip, type TravellerCount } from "./TripProvider";
 
 const TRAVELLER_OPTIONS: TravellerCount[] = [
@@ -27,24 +28,28 @@ interface FormErrors {
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function TripRequestForm() {
-  const {
-    selectedIds,
-    removeDestination,
-    clearDestinations,
-    appliedFilters,
-  } = useTrip();
-  const selected = useMemo(
-    () => destinations.filter((item) => selectedIds.includes(item.id)),
-    [selectedIds],
+  const trip = useTrip();
+  const selectedPlaces = useMemo(
+    () => destinations.filter((item) => trip.destinationSlugs.includes(item.slug)),
+    [trip.destinationSlugs],
   );
+  const selectedTours = useMemo(
+    () => tours.filter((item) => trip.tourSlugs.includes(item.slug)),
+    [trip.tourSlugs],
+  );
+  const selectedVehicles = useMemo(
+    () => vehicles.filter((item) => trip.vehicleSlugs.includes(item.slug)),
+    [trip.vehicleSlugs],
+  );
+  const hasSelection =
+    selectedPlaces.length + selectedTours.length + selectedVehicles.length > 0;
 
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
     whatsapp: "",
-    month:
-      appliedFilters.when === "any" ? "" : String(appliedFilters.when),
-    travellers: appliedFilters.travellers,
+    month: trip.appliedFilters.when === "any" ? "" : String(trip.appliedFilters.when),
+    travellers: trip.appliedFilters.travellers,
     notes: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -71,7 +76,7 @@ export function TripRequestForm() {
 
   if (submitted) {
     return (
-      <section id="contact" className="scroll-mt-24 bg-sand/35">
+      <section id="trip-request" className="scroll-mt-24 bg-sand/35">
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <div
             className="rounded-3xl border border-line bg-paper px-6 py-12 text-center"
@@ -84,14 +89,8 @@ export function TripRequestForm() {
               Thank you, {form.name.trim()}. We will write back within a day.
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted">
-              This is a sample confirmation. No message was sent. Your notes and
-              selected places stay on this page until you refresh.
+              This is a sample confirmation. No message was sent.
             </p>
-            {selected.length > 0 ? (
-              <p className="mt-6 text-sm text-ink">
-                On the list: {selected.map((item) => item.name).join(", ")}
-              </p>
-            ) : null}
             <button
               type="button"
               className="btn-secondary mt-8"
@@ -106,58 +105,57 @@ export function TripRequestForm() {
   }
 
   return (
-    <section id="contact" className="scroll-mt-24 bg-sand/35">
+    <section id="trip-request" className="scroll-mt-24 bg-sand/35">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
-          Contact
+          Plan a trip
         </p>
         <h2 className="mt-3 max-w-xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
           Tell us the month. We will sketch the road.
         </h2>
-        <p className="mt-3 max-w-xl text-muted">
-          A planner replies by email or WhatsApp. Nothing is booked until you
-          approve an itinerary.
-        </p>
-
         <div className="mt-8 rounded-3xl border border-line bg-paper p-5 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-display text-xl text-ink">Selected places</h3>
-            {selected.length > 0 ? (
+            <h3 className="font-display text-xl text-ink">On this request</h3>
+            {hasSelection ? (
               <button
                 type="button"
                 className="text-sm font-medium text-azure underline-offset-2 hover:underline"
-                onClick={clearDestinations}
+                onClick={trip.clearTrip}
               >
                 Clear all
               </button>
             ) : null}
           </div>
-          {selected.length === 0 ? (
+          {!hasSelection ? (
             <p className="mt-3 text-sm text-muted">
-              Add places from Destinations, or leave this empty and describe the
-              trip in notes.
+              Add places, tours, or vehicles from the pages above, or describe
+              the trip in notes.
             </p>
           ) : (
             <ul className="mt-4 flex flex-wrap gap-2">
-              {selected.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center gap-2 rounded-full border border-line bg-sand/70 pl-3 pr-1 py-1 text-sm text-ink"
-                >
-                  {item.name}
-                  <button
-                    type="button"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-paper"
-                    onClick={() => removeDestination(item.id)}
-                    aria-label={`Remove ${item.name}`}
-                  >
-                    ×
-                  </button>
-                </li>
+              {selectedPlaces.map((item) => (
+                <Chip
+                  key={item.slug}
+                  label={`Place: ${item.name}`}
+                  onRemove={() => trip.removeDestination(item.slug)}
+                />
+              ))}
+              {selectedTours.map((item) => (
+                <Chip
+                  key={item.slug}
+                  label={`Tour: ${item.name}`}
+                  onRemove={() => trip.removeTour(item.slug)}
+                />
+              ))}
+              {selectedVehicles.map((item) => (
+                <Chip
+                  key={item.slug}
+                  label={`Vehicle: ${item.name}`}
+                  onRemove={() => trip.removeVehicle(item.slug)}
+                />
               ))}
             </ul>
           )}
-
           <form
             className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2"
             noValidate
@@ -185,9 +183,7 @@ export function TripRequestForm() {
                 }
                 required
               />
-              {errors.name ? (
-                <p className="field-error">{errors.name}</p>
-              ) : null}
+              {errors.name ? <p className="field-error">{errors.name}</p> : null}
             </div>
             <div>
               <label className="field-label" htmlFor="email">
@@ -289,7 +285,7 @@ export function TripRequestForm() {
                 name="notes"
                 rows={4}
                 className="field-input min-h-28 resize-y"
-                placeholder="Pace, diet, photography, children, winter travel…"
+                placeholder="Pace, diet, photography, self-drive, children…"
                 value={form.notes}
                 onChange={(event) =>
                   setForm({ ...form, notes: event.target.value })
@@ -305,5 +301,27 @@ export function TripRequestForm() {
         </div>
       </div>
     </section>
+  );
+}
+
+function Chip({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove: () => void;
+}) {
+  return (
+    <li className="flex items-center gap-2 rounded-full border border-line bg-sand/70 py-1 pl-3 pr-1 text-sm text-ink">
+      {label}
+      <button
+        type="button"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-paper"
+        onClick={onRemove}
+        aria-label={`Remove ${label}`}
+      >
+        ×
+      </button>
+    </li>
   );
 }

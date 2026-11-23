@@ -1,7 +1,7 @@
 "use client";
 
-import { MONTHS, REGIONS, TRAVEL_STYLES } from "@/data/tours";
-import type { Region, TravelStyle } from "@/data/types";
+import { MONTHS, regionLabels, styleLabels } from "@/lib/format";
+import type { Region, TravelStyle } from "@/types/travel";
 import {
   filterDestinations,
   useTrip,
@@ -13,6 +13,24 @@ const TRAVELLER_OPTIONS: TravellerCount[] = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 ];
 
+const WHERE_OPTIONS: { id: Region | "anywhere"; label: string }[] = [
+  { id: "anywhere", label: regionLabels.anywhere },
+  { id: "gobi", label: "Gobi" },
+  { id: "altai", label: "Altai" },
+  { id: "central", label: "Central" },
+  { id: "north", label: "North" },
+  { id: "wildlife", label: "Wildlife" },
+];
+
+const STYLE_OPTIONS: { id: TravelStyle | "any"; label: string }[] = [
+  { id: "any", label: styleLabels.any },
+  { id: "4x4", label: styleLabels["4x4"] },
+  { id: "ger", label: styleLabels.ger },
+  { id: "trek", label: styleLabels.trek },
+  { id: "homestay", label: styleLabels.homestay },
+  { id: "wildlife", label: styleLabels.wildlife },
+];
+
 export function HeroSearch() {
   const { filters, setFilters, applySearch, appliedFilters } = useTrip();
   const matchCount = filterDestinations(filters).length;
@@ -22,14 +40,8 @@ export function HeroSearch() {
   }
 
   return (
-    <section
-      id="top"
-      className="relative overflow-x-clip border-b border-line bg-hero"
-    >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-80"
-        aria-hidden="true"
-      >
+    <section className="relative overflow-x-clip border-b border-line bg-hero">
+      <div className="pointer-events-none absolute inset-0 opacity-80" aria-hidden="true">
         <HeroBackdrop />
       </div>
       <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
@@ -37,14 +49,12 @@ export function HeroSearch() {
           Private travel · Mongolia
         </p>
         <h1 className="mt-4 max-w-3xl font-display text-[2.15rem] leading-[1.12] tracking-tight text-ink sm:text-5xl lg:text-[3.4rem]">
-          Quiet roads, open sky, and a journey written for your group alone.
+          A private map of Mongolia, drawn for the people who will travel it.
         </h1>
         <p className="mt-5 max-w-xl text-base leading-7 text-muted sm:text-lg">
-          Azure Skyland designs small private expeditions across the Gobi, Altai,
-          Khangai, and the northern lakes. No bus groups — one itinerary, written
-          for the people on it.
+          Nomad Atlas plans small 4x4 expeditions, ger camps, and nomad stays
+          across the Gobi, Altai, Khangai, and the northern lakes. No bus groups.
         </p>
-
         <form
           className="mt-10 rounded-3xl border border-line bg-paper/95 p-3 shadow-[0_18px_50px_-28px_rgba(31,46,38,0.45)] sm:p-4"
           onSubmit={(event) => {
@@ -62,9 +72,9 @@ export function HeroSearch() {
                   update("where", event.target.value as Region | "anywhere")
                 }
               >
-                {REGIONS.filter((region) => region.id !== "all").map((region) => (
-                  <option key={region.id} value={region.id}>
-                    {region.label}
+                {WHERE_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -78,9 +88,9 @@ export function HeroSearch() {
                   update("style", event.target.value as TravelStyle | "any")
                 }
               >
-                {TRAVEL_STYLES.map((style) => (
-                  <option key={style.id} value={style.id}>
-                    {style.label}
+                {STYLE_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -132,11 +142,10 @@ export function HeroSearch() {
               {matchCount} matching {matchCount === 1 ? "place" : "places"}
             </p>
             <button type="submit" className="btn-primary sm:min-w-44">
-              Search journeys
+              Search
             </button>
           </div>
         </form>
-
         <ActiveFilters applied={appliedFilters} />
       </div>
     </section>
@@ -163,16 +172,10 @@ function Field({
 function ActiveFilters({ applied }: { applied: SearchFilters }) {
   const chips: string[] = [];
   if (applied.where !== "anywhere") {
-    const region = REGIONS.find((item) => item.id === applied.where);
-    if (region) {
-      chips.push(region.label);
-    }
+    chips.push(regionLabels[applied.where]);
   }
   if (applied.style !== "any") {
-    const style = TRAVEL_STYLES.find((item) => item.id === applied.style);
-    if (style) {
-      chips.push(style.label);
-    }
+    chips.push(styleLabels[applied.style]);
   }
   if (applied.when !== "any") {
     chips.push(MONTHS[applied.when - 1]);
@@ -182,16 +185,13 @@ function ActiveFilters({ applied }: { applied: SearchFilters }) {
       ? "12+ travellers"
       : `${applied.travellers} travellers`,
   );
-
   const narrowed =
     applied.where !== "anywhere" ||
     applied.style !== "any" ||
     applied.when !== "any";
-
   if (!narrowed) {
     return null;
   }
-
   return (
     <p
       className="mt-5 flex flex-wrap items-center gap-2 text-sm text-muted"

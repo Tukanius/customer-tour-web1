@@ -8,8 +8,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { destinations } from "@/data/tours";
-import type { LanguageCode, Region, TravelStyle } from "@/data/types";
+import { destinations, tours } from "@/data/travelData";
+import type { Region, TravelStyle } from "@/types/travel";
 
 export type TravellerCount = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
@@ -28,32 +28,44 @@ const defaultFilters: SearchFilters = {
 };
 
 interface TripContextValue {
-  language: LanguageCode;
-  setLanguage: (code: LanguageCode) => void;
   filters: SearchFilters;
   setFilters: (next: SearchFilters) => void;
   appliedFilters: SearchFilters;
   applySearch: () => void;
   clearFilters: () => void;
-  selectedIds: string[];
-  toggleDestination: (id: string) => void;
-  removeDestination: (id: string) => void;
-  clearDestinations: () => void;
+  destinationSlugs: string[];
+  tourSlugs: string[];
+  vehicleSlugs: string[];
+  toggleDestination: (slug: string) => void;
+  toggleTour: (slug: string) => void;
+  toggleVehicle: (slug: string) => void;
+  removeDestination: (slug: string) => void;
+  removeTour: (slug: string) => void;
+  removeVehicle: (slug: string) => void;
+  clearTrip: () => void;
 }
 
 const TripContext = createContext<TripContextValue | null>(null);
 
+function toggleIn(list: string[], slug: string) {
+  return list.includes(slug)
+    ? list.filter((item) => item !== slug)
+    : [...list, slug];
+}
+
 export function TripProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<LanguageCode>("EN");
   const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
   const [appliedFilters, setAppliedFilters] =
     useState<SearchFilters>(defaultFilters);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [destinationSlugs, setDestinationSlugs] = useState<string[]>([]);
+  const [tourSlugs, setTourSlugs] = useState<string[]>([]);
+  const [vehicleSlugs, setVehicleSlugs] = useState<string[]>([]);
 
   const applySearch = useCallback(() => {
     setAppliedFilters(filters);
-    const node = document.getElementById("destinations");
-    node?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById("destinations")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [filters]);
 
   const clearFilters = useCallback(() => {
@@ -61,46 +73,63 @@ export function TripProvider({ children }: { children: ReactNode }) {
     setAppliedFilters(defaultFilters);
   }, []);
 
-  const toggleDestination = useCallback((id: string) => {
-    setSelectedIds((current) =>
-      current.includes(id)
-        ? current.filter((item) => item !== id)
-        : [...current, id],
-    );
+  const toggleDestination = useCallback((slug: string) => {
+    setDestinationSlugs((list) => toggleIn(list, slug));
   }, []);
-
-  const removeDestination = useCallback((id: string) => {
-    setSelectedIds((current) => current.filter((item) => item !== id));
+  const toggleTour = useCallback((slug: string) => {
+    setTourSlugs((list) => toggleIn(list, slug));
   }, []);
-
-  const clearDestinations = useCallback(() => {
-    setSelectedIds([]);
+  const toggleVehicle = useCallback((slug: string) => {
+    setVehicleSlugs((list) => toggleIn(list, slug));
+  }, []);
+  const removeDestination = useCallback((slug: string) => {
+    setDestinationSlugs((list) => list.filter((item) => item !== slug));
+  }, []);
+  const removeTour = useCallback((slug: string) => {
+    setTourSlugs((list) => list.filter((item) => item !== slug));
+  }, []);
+  const removeVehicle = useCallback((slug: string) => {
+    setVehicleSlugs((list) => list.filter((item) => item !== slug));
+  }, []);
+  const clearTrip = useCallback(() => {
+    setDestinationSlugs([]);
+    setTourSlugs([]);
+    setVehicleSlugs([]);
   }, []);
 
   const value = useMemo(
     () => ({
-      language,
-      setLanguage,
       filters,
       setFilters,
       appliedFilters,
       applySearch,
       clearFilters,
-      selectedIds,
+      destinationSlugs,
+      tourSlugs,
+      vehicleSlugs,
       toggleDestination,
+      toggleTour,
+      toggleVehicle,
       removeDestination,
-      clearDestinations,
+      removeTour,
+      removeVehicle,
+      clearTrip,
     }),
     [
-      language,
       filters,
       appliedFilters,
       applySearch,
       clearFilters,
-      selectedIds,
+      destinationSlugs,
+      tourSlugs,
+      vehicleSlugs,
       toggleDestination,
+      toggleTour,
+      toggleVehicle,
       removeDestination,
-      clearDestinations,
+      removeTour,
+      removeVehicle,
+      clearTrip,
     ],
   );
 
@@ -124,6 +153,22 @@ export function filterDestinations(filters: SearchFilters) {
       return false;
     }
     if (filters.when !== "any" && !destination.months.includes(filters.when)) {
+      return false;
+    }
+    return true;
+  });
+}
+
+export function filterTours(filters: SearchFilters) {
+  return tours.filter((tour) => {
+    if (
+      filters.where !== "anywhere" &&
+      tour.region !== "mixed" &&
+      tour.region !== filters.where
+    ) {
+      return false;
+    }
+    if (filters.style !== "any" && !tour.styles.includes(filters.style)) {
       return false;
     }
     return true;

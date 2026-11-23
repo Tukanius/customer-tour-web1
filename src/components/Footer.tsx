@@ -1,17 +1,11 @@
+import Link from "next/link";
 import { LogoMark } from "./LogoMark";
 
-const FOOTER_LINKS = [
-  { href: "#destinations", label: "Destinations" },
-  { href: "#journeys", label: "Journeys" },
-  { href: "#car-rental", label: "Car Rental" },
-  { href: "#about", label: "About" },
-  { href: "#contact", label: "Contact" },
-] as const;
-
-const SOCIAL = [
-  { href: "https://www.instagram.com", label: "Instagram" },
-  { href: "https://www.facebook.com", label: "Facebook" },
-  { href: "https://t.me", label: "Telegram" },
+const LINKS = [
+  { href: "/destinations", label: "Destinations" },
+  { href: "/tours", label: "Tours" },
+  { href: "/car-rent", label: "Car Rent" },
+  { href: "/#trip-request", label: "Plan a trip" },
 ] as const;
 
 export function Footer() {
@@ -21,10 +15,10 @@ export function Footer() {
         <div>
           <div className="flex items-center gap-2.5">
             <LogoMark className="h-9 w-9" />
-            <p className="font-display text-xl">Azure Skyland</p>
+            <p className="font-display text-xl">Nomad Atlas</p>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-6 text-paper/75">
-            Private expeditions across Mongolia. Original sample copy for this
+            Private journeys across Mongolia. Original sample copy for this
             demo — not affiliated with any existing operator.
           </p>
         </div>
@@ -33,50 +27,36 @@ export function Footer() {
             Map
           </p>
           <ul className="mt-3 space-y-2 text-sm">
-            {FOOTER_LINKS.map((link) => (
+            {LINKS.map((link) => (
               <li key={link.href}>
-                <a className="hover:text-sand" href={link.href}>
+                <Link className="hover:text-sand" href={link.href}>
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
         </nav>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-paper/55">
-            Contact
+            Desk
           </p>
           <address className="mt-3 not-italic text-sm leading-7 text-paper/80">
             Chinggis Avenue, Ulaanbaatar
             <br />
-            <a className="hover:text-sand" href="mailto:hello@azureskyland.example">
-              hello@azureskyland.example
+            <a className="hover:text-sand" href="mailto:hello@nomadatlas.example">
+              hello@nomadatlas.example
             </a>
             <br />
             <a className="hover:text-sand" href="tel:+97611000000">
               +976 11 000 000
             </a>
           </address>
-          <ul className="mt-4 flex flex-wrap gap-3 text-sm">
-            {SOCIAL.map((item) => (
-              <li key={item.label}>
-                <a
-                  className="rounded-full border border-paper/20 px-3 py-1 hover:bg-paper/10"
-                  href={item.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
       <div className="border-t border-paper/10">
         <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-paper/55 sm:px-6 lg:px-8">
-          © 2026 Azure Skyland. All rights reserved.
-          Placeholder brand for demonstration.
+          © 2026 Nomad Atlas. All rights reserved. Placeholder brand for
+          demonstration.
         </p>
       </div>
     </footer>
