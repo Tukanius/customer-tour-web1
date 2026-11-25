@@ -67,46 +67,47 @@ function mapLocation(row: Record<string, unknown>) {
   return { lat, lng };
 }
 
+function destinationRef(value: unknown): { id: string; name?: string; region?: string } {
+  if (typeof value === "string" && value) return { id: value };
+  if (!value || typeof value !== "object") return { id: "" };
+  const dest = value as Record<string, unknown>;
+  return {
+    id: asId(dest),
+    name: text(dest.name),
+    region: text(dest.region),
+  };
+}
+
 function mapStops(row: Record<string, unknown>): TourStop[] {
   const itinerary = row.itinerary ?? row.days ?? row.stops;
   const out: TourStop[] = [];
   if (Array.isArray(itinerary) && itinerary.length > 0) {
-    itinerary.forEach((entry, index) => {
-      if (!entry || typeof entry !== "object") return;
+    for (const entry of itinerary) {
+      if (!entry || typeof entry !== "object") continue;
       const item = entry as Record<string, unknown>;
-      const dest =
-        item.destination && typeof item.destination === "object"
-          ? (item.destination as Record<string, unknown>)
-          : item;
-      const name =
-        text(dest.name) ||
-        text(item.title) ||
-        text(item.name) ||
-        `Stop ${index + 1}`;
+      const dest = destinationRef(item.destination);
+      const name = text(item.name) || dest.name;
+      if (!name) continue;
       out.push({
-        id: asId(dest) || asId(item),
+        id: dest.id,
         name,
-        region: text(dest.region) || text(item.region),
+        region: dest.region || text(item.region),
         title: text(item.title) || text(item.day) || text(item.heading),
         body: text(item.body) || text(item.description) || text(item.notes),
       });
-    });
+    }
     return out;
   }
   if (!Array.isArray(row.destinations)) return [];
-  row.destinations.forEach((entry, index) => {
-    if (typeof entry === "string") {
-      out.push({ id: entry, name: `Stop ${index + 1}` });
-      return;
-    }
-    if (!entry || typeof entry !== "object") return;
-    const dest = entry as Record<string, unknown>;
+  for (const entry of row.destinations) {
+    const dest = destinationRef(entry);
+    if (!dest.id && !dest.name) continue;
     out.push({
-      id: asId(dest),
-      name: text(dest.name) || `Stop ${index + 1}`,
-      region: text(dest.region),
+      id: dest.id,
+      name: dest.name || dest.id,
+      region: dest.region,
     });
-  });
+  }
   return out;
 }
 
