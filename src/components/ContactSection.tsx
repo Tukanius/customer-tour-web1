@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { contactContent } from "@/data/travelData";
+import { postInquiry } from "@/lib/api";
 import type { InquiryTopicId } from "@/types/travel";
 import { SiteSubNav } from "./SiteSubNav";
 
@@ -31,7 +32,8 @@ export function ContactSection() {
     message: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState<"sent" | "pending" | null>(null);
+  const [pendingNote, setPendingNote] = useState("");
 
   function validate(next: FormState): FormErrors {
     const result: FormErrors = {};
@@ -129,11 +131,13 @@ export function ContactSection() {
             <h2 className="mt-3 font-display text-3xl text-ink">
               {copy.form.confirmTitle.replace("{name}", form.name.trim())}
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-muted">{copy.form.confirmBody}</p>
+            <p className="mx-auto mt-4 max-w-lg text-muted">
+              {submitted === "sent" ? copy.form.confirmBody : pendingNote || copy.form.confirmPendingBody}
+            </p>
             <button
               type="button"
               className="btn-secondary mt-8"
-              onClick={() => setSubmitted(false)}
+              onClick={() => setSubmitted(null)}
             >
               {copy.form.editLabel}
             </button>
@@ -142,13 +146,24 @@ export function ContactSection() {
           <form
             className="rounded-3xl border border-line bg-paper p-5 sm:p-8"
             noValidate
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
               const nextErrors = validate(form);
               setErrors(nextErrors);
-              if (Object.keys(nextErrors).length === 0) {
-                setSubmitted(true);
+              if (Object.keys(nextErrors).length > 0) return;
+              const result = await postInquiry({
+                type: "contact",
+                name: form.name.trim(),
+                contact: form.contact.trim(),
+                topic: form.topic,
+                message: form.message.trim(),
+              });
+              if (result.status === "error") {
+                setErrors({ contact: result.message });
+                return;
               }
+              setPendingNote(result.status === "pending" ? result.message : "");
+              setSubmitted(result.status);
             }}
           >
             <div>

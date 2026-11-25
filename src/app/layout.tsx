@@ -41,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <TripProvider>
           <Navbar />
+          <div className="h-16 shrink-0 sm:h-[4.25rem]" aria-hidden="true" />
           <main id="main" className="flex-1">
             {children}
           </main>

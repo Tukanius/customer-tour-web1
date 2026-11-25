@@ -14,10 +14,10 @@ export function AddToTripButton({
   const trip = useTrip();
   const selected =
     kind === "destination"
-      ? trip.destinationSlugs.includes(slug)
+      ? trip.destinationIds.includes(slug)
       : kind === "tour"
-        ? trip.tourSlugs.includes(slug)
-        : trip.vehicleSlugs.includes(slug);
+        ? trip.tourIds.includes(slug)
+        : trip.vehicleIds.includes(slug);
   const onToggle =
     kind === "destination"
       ? trip.toggleDestination

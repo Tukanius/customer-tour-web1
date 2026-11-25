@@ -8,105 +8,60 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { destinations, tours } from "@/data/travelData";
-import type { Region, TravelStyle } from "@/types/travel";
-
-export type TravellerCount = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-
-export interface SearchFilters {
-  where: Region | "anywhere";
-  style: TravelStyle | "any";
-  when: number | "any";
-  travellers: TravellerCount;
-}
-
-const defaultFilters: SearchFilters = {
-  where: "anywhere",
-  style: "any",
-  when: "any",
-  travellers: 2,
-};
 
 interface TripContextValue {
-  filters: SearchFilters;
-  setFilters: (next: SearchFilters) => void;
-  appliedFilters: SearchFilters;
-  applySearch: () => void;
-  clearFilters: () => void;
-  destinationSlugs: string[];
-  tourSlugs: string[];
-  vehicleSlugs: string[];
-  toggleDestination: (slug: string) => void;
-  toggleTour: (slug: string) => void;
-  toggleVehicle: (slug: string) => void;
-  removeDestination: (slug: string) => void;
-  removeTour: (slug: string) => void;
-  removeVehicle: (slug: string) => void;
+  destinationIds: string[];
+  tourIds: string[];
+  vehicleIds: string[];
+  toggleDestination: (id: string) => void;
+  toggleTour: (id: string) => void;
+  toggleVehicle: (id: string) => void;
+  removeDestination: (id: string) => void;
+  removeTour: (id: string) => void;
+  removeVehicle: (id: string) => void;
   clearTrip: () => void;
 }
 
 const TripContext = createContext<TripContextValue | null>(null);
 
-function toggleIn(list: string[], slug: string) {
-  return list.includes(slug)
-    ? list.filter((item) => item !== slug)
-    : [...list, slug];
+function toggleIn(list: string[], id: string) {
+  return list.includes(id) ? list.filter((item) => item !== id) : [...list, id];
 }
 
 export function TripProvider({ children }: { children: ReactNode }) {
-  const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
-  const [appliedFilters, setAppliedFilters] =
-    useState<SearchFilters>(defaultFilters);
-  const [destinationSlugs, setDestinationSlugs] = useState<string[]>([]);
-  const [tourSlugs, setTourSlugs] = useState<string[]>([]);
-  const [vehicleSlugs, setVehicleSlugs] = useState<string[]>([]);
+  const [destinationIds, setDestinationIds] = useState<string[]>([]);
+  const [tourIds, setTourIds] = useState<string[]>([]);
+  const [vehicleIds, setVehicleIds] = useState<string[]>([]);
 
-  const applySearch = useCallback(() => {
-    setAppliedFilters(filters);
-    document
-      .getElementById("destinations")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [filters]);
-
-  const clearFilters = useCallback(() => {
-    setFilters(defaultFilters);
-    setAppliedFilters(defaultFilters);
+  const toggleDestination = useCallback((id: string) => {
+    setDestinationIds((list) => toggleIn(list, id));
   }, []);
-
-  const toggleDestination = useCallback((slug: string) => {
-    setDestinationSlugs((list) => toggleIn(list, slug));
+  const toggleTour = useCallback((id: string) => {
+    setTourIds((list) => toggleIn(list, id));
   }, []);
-  const toggleTour = useCallback((slug: string) => {
-    setTourSlugs((list) => toggleIn(list, slug));
+  const toggleVehicle = useCallback((id: string) => {
+    setVehicleIds((list) => toggleIn(list, id));
   }, []);
-  const toggleVehicle = useCallback((slug: string) => {
-    setVehicleSlugs((list) => toggleIn(list, slug));
+  const removeDestination = useCallback((id: string) => {
+    setDestinationIds((list) => list.filter((item) => item !== id));
   }, []);
-  const removeDestination = useCallback((slug: string) => {
-    setDestinationSlugs((list) => list.filter((item) => item !== slug));
+  const removeTour = useCallback((id: string) => {
+    setTourIds((list) => list.filter((item) => item !== id));
   }, []);
-  const removeTour = useCallback((slug: string) => {
-    setTourSlugs((list) => list.filter((item) => item !== slug));
-  }, []);
-  const removeVehicle = useCallback((slug: string) => {
-    setVehicleSlugs((list) => list.filter((item) => item !== slug));
+  const removeVehicle = useCallback((id: string) => {
+    setVehicleIds((list) => list.filter((item) => item !== id));
   }, []);
   const clearTrip = useCallback(() => {
-    setDestinationSlugs([]);
-    setTourSlugs([]);
-    setVehicleSlugs([]);
+    setDestinationIds([]);
+    setTourIds([]);
+    setVehicleIds([]);
   }, []);
 
   const value = useMemo(
     () => ({
-      filters,
-      setFilters,
-      appliedFilters,
-      applySearch,
-      clearFilters,
-      destinationSlugs,
-      tourSlugs,
-      vehicleSlugs,
+      destinationIds,
+      tourIds,
+      vehicleIds,
       toggleDestination,
       toggleTour,
       toggleVehicle,
@@ -116,13 +71,9 @@ export function TripProvider({ children }: { children: ReactNode }) {
       clearTrip,
     }),
     [
-      filters,
-      appliedFilters,
-      applySearch,
-      clearFilters,
-      destinationSlugs,
-      tourSlugs,
-      vehicleSlugs,
+      destinationIds,
+      tourIds,
+      vehicleIds,
       toggleDestination,
       toggleTour,
       toggleVehicle,
@@ -142,35 +93,4 @@ export function useTrip() {
     throw new Error("useTrip must be used within TripProvider");
   }
   return context;
-}
-
-export function filterDestinations(filters: SearchFilters) {
-  return destinations.filter((destination) => {
-    if (filters.where !== "anywhere" && destination.region !== filters.where) {
-      return false;
-    }
-    if (filters.style !== "any" && !destination.styles.includes(filters.style)) {
-      return false;
-    }
-    if (filters.when !== "any" && !destination.months.includes(filters.when)) {
-      return false;
-    }
-    return true;
-  });
-}
-
-export function filterTours(filters: SearchFilters) {
-  return tours.filter((tour) => {
-    if (
-      filters.where !== "anywhere" &&
-      tour.region !== "mixed" &&
-      tour.region !== filters.where
-    ) {
-      return false;
-    }
-    if (filters.style !== "any" && !tour.styles.includes(filters.style)) {
-      return false;
-    }
-    return true;
-  });
 }

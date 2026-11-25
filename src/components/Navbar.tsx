@@ -9,6 +9,8 @@ const NAV_LINKS = [
   { href: "/destinations", label: "Destinations" },
   { href: "/tours", label: "Tours" },
   { href: "/car-rent", label: "Car Rent" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 export function Navbar() {
@@ -38,8 +40,8 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-line/80 bg-paper/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-[4.25rem] sm:px-6 lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-paper/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:h-[4.25rem] sm:px-6 lg:gap-3 lg:px-8">
           <Link
             href="/"
             className="flex min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azure"
@@ -50,16 +52,17 @@ export function Navbar() {
             </span>
           </Link>
           <nav
-            className="ml-4 hidden items-center gap-1 lg:flex"
+            className="ml-2 hidden items-center gap-0.5 lg:flex"
             aria-label="Primary"
           >
             {NAV_LINKS.map((link) => {
-              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              const active =
+                pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                  className={`rounded-full px-2.5 py-1.5 text-sm transition-colors ${
                     active
                       ? "bg-sand text-ink"
                       : "text-muted hover:bg-sand hover:text-ink"

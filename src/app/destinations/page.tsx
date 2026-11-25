@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { DestinationCatalog } from "@/components/DestinationCatalog";
+import { Suspense } from "react";
+import { CatalogPageBody, CatalogPageSkeleton } from "@/components/CatalogPage";
+import { listDestinations } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Destinations",
   description:
-    "Gobi dunes, Altai peaks, central grassland, northern lakes, and wildlife ranges — private places on the Nomad Atlas map.",
+    "Places the Nomad Atlas desk has published — dunes, parks, and grassland, as they stand in admin.",
 };
 
 export default function DestinationsPage() {
@@ -17,12 +19,19 @@ export default function DestinationsPage() {
         The map, place by place.
       </h1>
       <p className="mt-4 max-w-xl text-muted leading-7">
-        Filter by region. Add a place to your trip, then send a request from
-        the home form.
+        Only published destinations appear here. Add a place to your trip, then
+        send a request from the home form.
       </p>
       <div className="mt-10">
-        <DestinationCatalog />
+        <Suspense fallback={<CatalogPageSkeleton />}>
+          <DestinationsBody />
+        </Suspense>
       </div>
     </div>
   );
+}
+
+async function DestinationsBody() {
+  const result = await listDestinations();
+  return <CatalogPageBody result={result} resource="destinations" />;
 }

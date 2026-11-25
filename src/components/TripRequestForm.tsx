@@ -1,20 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { destinations, tours, vehicles } from "@/data/travelData";
+import { postInquiry } from "@/lib/api";
 import { MONTHS } from "@/lib/format";
-import { useTrip, type TravellerCount } from "./TripProvider";
-
-const TRAVELLER_OPTIONS: TravellerCount[] = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-];
+import type { CatalogItem } from "@/types/catalog";
+import { useTrip } from "./TripProvider";
 
 interface FormState {
   name: string;
   email: string;
   whatsapp: string;
   month: string;
-  travellers: TravellerCount;
+  travellers: string;
   notes: string;
 }
 
@@ -27,19 +24,27 @@ interface FormErrors {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function TripRequestForm() {
+export function TripRequestForm({
+  destinations,
+  tours,
+  vehicles,
+}: {
+  destinations: CatalogItem[];
+  tours: CatalogItem[];
+  vehicles: CatalogItem[];
+}) {
   const trip = useTrip();
   const selectedPlaces = useMemo(
-    () => destinations.filter((item) => trip.destinationSlugs.includes(item.slug)),
-    [trip.destinationSlugs],
+    () => destinations.filter((item) => trip.destinationIds.includes(item.id)),
+    [destinations, trip.destinationIds],
   );
   const selectedTours = useMemo(
-    () => tours.filter((item) => trip.tourSlugs.includes(item.slug)),
-    [trip.tourSlugs],
+    () => tours.filter((item) => trip.tourIds.includes(item.id)),
+    [tours, trip.tourIds],
   );
   const selectedVehicles = useMemo(
-    () => vehicles.filter((item) => trip.vehicleSlugs.includes(item.slug)),
-    [trip.vehicleSlugs],
+    () => vehicles.filter((item) => trip.vehicleIds.includes(item.id)),
+    [vehicles, trip.vehicleIds],
   );
   const hasSelection =
     selectedPlaces.length + selectedTours.length + selectedVehicles.length > 0;
@@ -48,29 +53,24 @@ export function TripRequestForm() {
     name: "",
     email: "",
     whatsapp: "",
-    month: trip.appliedFilters.when === "any" ? "" : String(trip.appliedFilters.when),
-    travellers: trip.appliedFilters.travellers,
+    month: "",
+    travellers: "2",
     notes: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState<"sent" | "pending" | null>(null);
+  const [pendingNote, setPendingNote] = useState("");
 
   function validate(next: FormState): FormErrors {
     const result: FormErrors = {};
-    if (next.name.trim().length < 2) {
-      result.name = "Please enter your name.";
-    }
+    if (next.name.trim().length < 2) result.name = "Please enter your name.";
     const email = next.email.trim();
     const whatsapp = next.whatsapp.trim();
-    if (!email && !whatsapp) {
-      result.contact = "Add an email or a WhatsApp number.";
-    }
+    if (!email && !whatsapp) result.contact = "Add an email or a WhatsApp number.";
     if (email && !emailPattern.test(email)) {
       result.email = "That email does not look complete.";
     }
-    if (!next.month) {
-      result.month = "Choose a travel month.";
-    }
+    if (!next.month) result.month = "Choose a travel month.";
     return result;
   }
 
@@ -89,12 +89,14 @@ export function TripRequestForm() {
               Thank you, {form.name.trim()}. We will write back within a day.
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted">
-              This is a sample confirmation. No message was sent.
+              {submitted === "sent"
+                ? "Your request was sent to the desk."
+                : pendingNote}
             </p>
             <button
               type="button"
               className="btn-secondary mt-8"
-              onClick={() => setSubmitted(false)}
+              onClick={() => setSubmitted(null)}
             >
               Edit request
             </button>
@@ -128,30 +130,30 @@ export function TripRequestForm() {
           </div>
           {!hasSelection ? (
             <p className="mt-3 text-sm text-muted">
-              Add places, tours, or vehicles from the pages above, or describe
-              the trip in notes.
+              Add published places, tours, or vehicles, or describe the trip in
+              notes.
             </p>
           ) : (
             <ul className="mt-4 flex flex-wrap gap-2">
               {selectedPlaces.map((item) => (
                 <Chip
-                  key={item.slug}
+                  key={item.id}
                   label={`Place: ${item.name}`}
-                  onRemove={() => trip.removeDestination(item.slug)}
+                  onRemove={() => trip.removeDestination(item.id)}
                 />
               ))}
               {selectedTours.map((item) => (
                 <Chip
-                  key={item.slug}
+                  key={item.id}
                   label={`Tour: ${item.name}`}
-                  onRemove={() => trip.removeTour(item.slug)}
+                  onRemove={() => trip.removeTour(item.id)}
                 />
               ))}
               {selectedVehicles.map((item) => (
                 <Chip
-                  key={item.slug}
+                  key={item.id}
                   label={`Vehicle: ${item.name}`}
-                  onRemove={() => trip.removeVehicle(item.slug)}
+                  onRemove={() => trip.removeVehicle(item.id)}
                 />
               ))}
             </ul>
@@ -159,13 +161,29 @@ export function TripRequestForm() {
           <form
             className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2"
             noValidate
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
               const nextErrors = validate(form);
               setErrors(nextErrors);
-              if (Object.keys(nextErrors).length === 0) {
-                setSubmitted(true);
+              if (Object.keys(nextErrors).length > 0) return;
+              const result = await postInquiry({
+                type: "trip-request",
+                name: form.name.trim(),
+                email: form.email.trim() || undefined,
+                whatsapp: form.whatsapp.trim() || undefined,
+                month: Number(form.month),
+                travellers: Number(form.travellers),
+                notes: form.notes.trim() || undefined,
+                destinationIds: trip.destinationIds,
+                tourIds: trip.tourIds,
+                vehicleIds: trip.vehicleIds,
+              });
+              if (result.status === "error") {
+                setErrors({ contact: result.message });
+                return;
               }
+              setPendingNote(result.status === "pending" ? result.message : "");
+              setSubmitted(result.status);
             }}
           >
             <div className="sm:col-span-2">
@@ -174,14 +192,11 @@ export function TripRequestForm() {
               </label>
               <input
                 id="name"
-                name="name"
                 autoComplete="name"
                 className="field-input"
-                value={form.name}
-                onChange={(event) =>
-                  setForm({ ...form, name: event.target.value })
-                }
                 required
+                value={form.name}
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
               />
               {errors.name ? <p className="field-error">{errors.name}</p> : null}
             </div>
@@ -191,18 +206,13 @@ export function TripRequestForm() {
               </label>
               <input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
                 className="field-input"
                 value={form.email}
-                onChange={(event) =>
-                  setForm({ ...form, email: event.target.value })
-                }
+                onChange={(event) => setForm({ ...form, email: event.target.value })}
               />
-              {errors.email ? (
-                <p className="field-error">{errors.email}</p>
-              ) : null}
+              {errors.email ? <p className="field-error">{errors.email}</p> : null}
             </div>
             <div>
               <label className="field-label" htmlFor="whatsapp">
@@ -210,7 +220,6 @@ export function TripRequestForm() {
               </label>
               <input
                 id="whatsapp"
-                name="whatsapp"
                 type="tel"
                 autoComplete="tel"
                 className="field-input"
@@ -236,22 +245,18 @@ export function TripRequestForm() {
                 id="month"
                 name="month"
                 className="field-input"
-                value={form.month}
-                onChange={(event) =>
-                  setForm({ ...form, month: event.target.value })
-                }
                 required
+                value={form.month}
+                onChange={(event) => setForm({ ...form, month: event.target.value })}
               >
                 <option value="">Choose a month</option>
-                {MONTHS.map((month, index) => (
-                  <option key={month} value={index + 1}>
-                    {month}
+                {MONTHS.map((label, index) => (
+                  <option key={label} value={index + 1}>
+                    {label}
                   </option>
                 ))}
               </select>
-              {errors.month ? (
-                <p className="field-error">{errors.month}</p>
-              ) : null}
+              {errors.month ? <p className="field-error">{errors.month}</p> : null}
             </div>
             <div>
               <label className="field-label" htmlFor="form-travellers">
@@ -263,15 +268,13 @@ export function TripRequestForm() {
                 className="field-input"
                 value={form.travellers}
                 onChange={(event) =>
-                  setForm({
-                    ...form,
-                    travellers: Number(event.target.value) as TravellerCount,
-                  })
+                  setForm({ ...form, travellers: event.target.value })
                 }
               >
-                {TRAVELLER_OPTIONS.map((count) => (
-                  <option key={count} value={count}>
-                    {count === 12 ? "12+" : String(count)}
+                {Array.from({ length: 12 }, (_, index) => (
+                  <option key={index + 1} value={index + 1}>
+                    {index + 1}
+                    {index + 1 === 12 ? "+" : ""}
                   </option>
                 ))}
               </select>
@@ -287,9 +290,7 @@ export function TripRequestForm() {
                 className="field-input min-h-28 resize-y"
                 placeholder="Pace, diet, photography, self-drive, children…"
                 value={form.notes}
-                onChange={(event) =>
-                  setForm({ ...form, notes: event.target.value })
-                }
+                onChange={(event) => setForm({ ...form, notes: event.target.value })}
               />
             </div>
             <div className="sm:col-span-2">
@@ -304,23 +305,15 @@ export function TripRequestForm() {
   );
 }
 
-function Chip({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <li className="flex items-center gap-2 rounded-full border border-line bg-sand/70 py-1 pl-3 pr-1 text-sm text-ink">
-      {label}
+    <li>
       <button
         type="button"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-paper"
+        className="rounded-full border border-line bg-sand/50 px-3 py-1 text-sm text-ink hover:bg-sand"
         onClick={onRemove}
-        aria-label={`Remove ${label}`}
       >
-        ×
+        {label} ×
       </button>
     </li>
   );
