@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { CatalogStatus } from "@/components/CatalogBoard";
-import { CatalogDetail, CatalogDetailSkeleton } from "@/components/CatalogDetail";
+import { DestinationProfile } from "@/components/DestinationSheet";
+import { StatusCard } from "@/components/PhotoCard";
 import { ApiDownError } from "@/lib/api";
 import { getDestination } from "@/lib/catalog";
 
@@ -26,7 +26,11 @@ export default function DestinationDetailPage({
   params,
 }: PageProps<"/destinations/[slug]">) {
   return (
-    <Suspense fallback={<CatalogDetailSkeleton />}>
+    <Suspense
+      fallback={
+        <div className="h-64 animate-pulse bg-mist sm:h-80" />
+      }
+    >
       <DestinationBody params={params} />
     </Suspense>
   );
@@ -44,19 +48,13 @@ async function DestinationBody({
   } catch (error) {
     if (error instanceof ApiDownError) {
       return (
-        <div className="mx-auto max-w-6xl px-4 py-16">
-          <CatalogStatus title="The desk is unreachable" body={error.message} />
+        <div className="mx-auto max-w-3xl px-4 py-16">
+          <StatusCard title="The desk is unreachable" body={error.message} />
         </div>
       );
     }
     throw error;
   }
   if (!destination) notFound();
-  return (
-    <CatalogDetail
-      item={destination}
-      kind="destination"
-      eyebrow={destination.region || "Destination"}
-    />
-  );
+  return <DestinationProfile item={destination} />;
 }

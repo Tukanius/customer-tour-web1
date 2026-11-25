@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { contactContent } from "@/data/travelData";
 import { postInquiry } from "@/lib/api";
+import { whatsappHref, WHATSAPP_DISPLAY } from "@/lib/contact";
 import type { InquiryTopicId } from "@/types/travel";
-import { SiteSubNav } from "./SiteSubNav";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -56,9 +57,8 @@ export function ContactSection() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-14 pt-6 sm:px-6 lg:px-8 lg:pb-20 lg:pt-8">
-      <SiteSubNav current="/contact" />
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
         {copy.eyebrow}
       </p>
       <h1 className="mt-3 max-w-2xl font-display text-4xl tracking-tight text-ink sm:text-5xl">
@@ -66,35 +66,39 @@ export function ContactSection() {
       </h1>
       <p className="mt-4 max-w-xl text-muted leading-7">{copy.lede}</p>
 
-      <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <aside id="contact-desk" className="scroll-mt-24 space-y-4">
+      <div className="mt-10 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <aside className="space-y-4">
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <li className="rounded-2xl border border-line bg-sand/30 p-4">
-              <Channel
-                label={copy.channels.phone.label}
-                href={copy.channels.phone.href}
-                display={copy.channels.phone.display}
-              />
+            <li className="rounded-3xl border border-line bg-paper p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                WhatsApp
+              </p>
+              <a
+                className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-ink hover:text-ocean"
+                href={whatsappHref()}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <WhatsAppIcon className="h-4 w-4 text-whatsapp" />
+                {WHATSAPP_DISPLAY}
+              </a>
             </li>
-            <li className="rounded-2xl border border-line bg-sand/30 p-4">
-              <Channel
-                label={copy.channels.email.label}
+            <li className="rounded-3xl border border-line bg-paper p-4 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                {copy.channels.email.label}
+              </p>
+              <a
+                className="mt-2 block text-sm text-ink hover:text-ocean"
                 href={copy.channels.email.href}
-                display={copy.channels.email.display}
-              />
+              >
+                {copy.channels.email.display}
+              </a>
             </li>
-            <li className="rounded-2xl border border-line bg-sand/30 p-4">
-              <Channel
-                label={copy.channels.whatsapp.label}
-                href={copy.channels.whatsapp.href}
-                display={copy.channels.whatsapp.display}
-              />
-            </li>
-            <li className="rounded-2xl border border-line bg-sand/30 p-4">
+            <li className="rounded-3xl border border-line bg-paper p-4 shadow-sm sm:col-span-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
                 {copy.office.label}
               </p>
-              <p className="mt-1 text-sm leading-5 text-ink">
+              <p className="mt-1 text-sm leading-6 text-ink">
                 {copy.office.lines.map((line) => (
                   <span key={line} className="block">
                     {line}
@@ -104,35 +108,23 @@ export function ContactSection() {
               </p>
             </li>
           </ul>
-          <ul className="flex flex-wrap gap-2">
-            {copy.social.map((item) => (
-              <li key={item.label}>
-                <a
-                  className="rounded-full border border-line bg-paper px-3 py-1 text-sm text-ink hover:bg-sand"
-                  href={item.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
         </aside>
 
         {submitted ? (
           <div
-            className="rounded-3xl border border-line bg-paper px-6 py-12 text-center"
+            className="rounded-3xl border border-line bg-paper px-6 py-12 text-center shadow-sm"
             role="status"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
               {copy.form.confirmEyebrow}
             </p>
             <h2 className="mt-3 font-display text-3xl text-ink">
               {copy.form.confirmTitle.replace("{name}", form.name.trim())}
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted">
-              {submitted === "sent" ? copy.form.confirmBody : pendingNote || copy.form.confirmPendingBody}
+              {submitted === "sent"
+                ? copy.form.confirmBody
+                : pendingNote || copy.form.confirmPendingBody}
             </p>
             <button
               type="button"
@@ -144,7 +136,7 @@ export function ContactSection() {
           </div>
         ) : (
           <form
-            className="rounded-3xl border border-line bg-paper p-5 sm:p-8"
+            className="rounded-3xl border border-line bg-paper p-5 shadow-sm sm:p-8"
             noValidate
             onSubmit={async (event) => {
               event.preventDefault();
@@ -259,27 +251,6 @@ export function ContactSection() {
           </form>
         )}
       </div>
-    </div>
-  );
-}
-
-function Channel({
-  label,
-  href,
-  display,
-}: {
-  label: string;
-  href: string;
-  display: string;
-}) {
-  return (
-    <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-        {label}
-      </p>
-      <a className="mt-1 block text-sm text-ink hover:text-azure" href={href}>
-        {display}
-      </a>
     </div>
   );
 }

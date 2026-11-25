@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
         Missing page
       </p>
       <h1 className="mt-3 font-display text-4xl text-ink">

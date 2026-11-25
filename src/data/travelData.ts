@@ -35,7 +35,7 @@ export const aboutContent: AboutContent = {
     {
       number: 1,
       title: "Choose route and places",
-      body: "Pick a package, a region, or a handful of destinations. Add them to a trip request so we can see the shape of the journey.",
+      body: "Pick a published tour, a region, or a handful of destinations, then write to the desk from Plan My Trip.",
     },
     {
       number: 2,
@@ -56,20 +56,10 @@ export const contactContent: ContactContent = {
   lede:
     "A planner replies by email or WhatsApp. Use the form for a custom tour, a 4x4, or a general question.",
   channels: {
-    phone: {
-      label: "Phone",
-      display: "+976 11 000 000",
-      href: "tel:+97611000000",
-    },
     email: {
       label: "Email",
       display: "hello@nomadatlas.example",
       href: "mailto:hello@nomadatlas.example",
-    },
-    whatsapp: {
-      label: "WhatsApp",
-      display: "+976 99 000 000",
-      href: "https://wa.me/97699000000",
     },
   },
   office: {
@@ -120,14 +110,10 @@ export const siteCopy: SiteCopy = {
   copyright:
     "© 2026 Nomad Atlas. All rights reserved. Placeholder brand for demonstration.",
   footerLinks: [
-    { href: "/destinations", label: "Destinations" },
+    { href: "/", label: "Home" },
     { href: "/tours", label: "Tours" },
-    { href: "/car-rent", label: "Car Rent" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
-    { href: "/#trip-request", label: "Plan a trip" },
-  ],
-  subNav: [
+    { href: "/destinations", label: "Destinations" },
+    { href: "/car-rent", label: "Car Rental" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ],

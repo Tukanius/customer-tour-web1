@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { contactContent, siteCopy } from "@/data/travelData";
+import { whatsappHref, WHATSAPP_DISPLAY } from "@/lib/contact";
 import { LogoMark } from "./LogoMark";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 
 export function Footer() {
-  const { channels, office, social } = contactContent;
+  const { channels, office } = contactContent;
 
   return (
-    <footer className="border-t border-line bg-ink text-paper">
+    <footer className="border-t border-line bg-ink pb-[var(--dock-h)] text-paper">
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 md:grid-cols-3 lg:px-8">
         <div>
           <div className="flex items-center gap-2.5">
@@ -24,7 +26,7 @@ export function Footer() {
           <ul className="mt-3 space-y-2 text-sm">
             {siteCopy.footerLinks.map((link) => (
               <li key={link.href}>
-                <Link className="hover:text-sand" href={link.href}>
+                <Link className="hover:text-sky" href={link.href}>
                   {link.label}
                 </Link>
               </li>
@@ -38,33 +40,21 @@ export function Footer() {
           <address className="mt-3 not-italic text-sm leading-7 text-paper/80">
             {office.lines[0]}
             <br />
-            <a className="hover:text-sand" href={channels.email.href}>
+            <a className="hover:text-sky" href={channels.email.href}>
               {channels.email.display}
             </a>
             <br />
-            <a className="hover:text-sand" href={channels.phone.href}>
-              {channels.phone.display}
-            </a>
-            <br />
-            <a className="hover:text-sand" href={channels.whatsapp.href}>
-              WhatsApp {channels.whatsapp.display}
+            <a
+              className="inline-flex items-center gap-2 hover:text-sky"
+              href={whatsappHref()}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <WhatsAppIcon className="h-4 w-4 text-whatsapp" />
+              WhatsApp {WHATSAPP_DISPLAY}
             </a>
             <span className="mt-2 block text-paper/60">{office.hours}</span>
           </address>
-          <ul className="mt-4 flex flex-wrap gap-3 text-sm">
-            {social.map((item) => (
-              <li key={item.label}>
-                <a
-                  className="rounded-full border border-paper/20 px-3 py-1 hover:bg-paper/10"
-                  href={item.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
       <div className="border-t border-paper/10">

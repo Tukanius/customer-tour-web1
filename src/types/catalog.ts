@@ -3,6 +3,14 @@ export interface CatalogImage {
   name?: string;
 }
 
+export interface TourStop {
+  id: string;
+  name: string;
+  region?: string;
+  title?: string;
+  body?: string;
+}
+
 export interface CatalogItem {
   id: string;
   name: string;
@@ -13,6 +21,8 @@ export interface CatalogItem {
   location?: { lat: number; lng: number } | null;
   capacity?: number;
   ownership?: string;
+  durationDays?: number;
+  stops: TourStop[];
 }
 
 export type CatalogKind = "destinations" | "tours" | "vehicles";

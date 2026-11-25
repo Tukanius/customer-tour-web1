@@ -1,5 +1,11 @@
 import { API_URL, ApiDownError, apiGetJson } from "@/lib/api";
-import type { CatalogItem, CatalogKind, CatalogResult } from "@/types/catalog";
+import type {
+  CatalogImage,
+  CatalogItem,
+  CatalogKind,
+  CatalogResult,
+  TourStop,
+} from "@/types/catalog";
 
 const LIST_LIMIT = 100;
 
@@ -29,46 +35,103 @@ function isPublished(row: Record<string, unknown>): boolean {
   return true;
 }
 
+function text(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+  return value.trim().replace(/\\"/g, '"').replace(/\\'/g, "'");
+}
+
+function mapImages(row: Record<string, unknown>): CatalogImage[] {
+  if (!Array.isArray(row.images)) return [];
+  const out: CatalogImage[] = [];
+  for (const img of row.images) {
+    const url = imageUrl(img as RawImage);
+    if (!url) continue;
+    out.push({
+      url,
+      name:
+        typeof img === "object" && img && "name" in img
+          ? String(img.name || "")
+          : "",
+    });
+  }
+  return out;
+}
+
+function mapLocation(row: Record<string, unknown>) {
+  const loc = row.location;
+  if (!loc || typeof loc !== "object") return null;
+  const lat = Number((loc as { lat?: unknown }).lat);
+  const lng = Number((loc as { lng?: unknown }).lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat === 0 && lng === 0) return null;
+  return { lat, lng };
+}
+
+function mapStops(row: Record<string, unknown>): TourStop[] {
+  const itinerary = row.itinerary ?? row.days ?? row.stops;
+  const out: TourStop[] = [];
+  if (Array.isArray(itinerary) && itinerary.length > 0) {
+    itinerary.forEach((entry, index) => {
+      if (!entry || typeof entry !== "object") return;
+      const item = entry as Record<string, unknown>;
+      const dest =
+        item.destination && typeof item.destination === "object"
+          ? (item.destination as Record<string, unknown>)
+          : item;
+      const name =
+        text(dest.name) ||
+        text(item.title) ||
+        text(item.name) ||
+        `Stop ${index + 1}`;
+      out.push({
+        id: asId(dest) || asId(item),
+        name,
+        region: text(dest.region) || text(item.region),
+        title: text(item.title) || text(item.day) || text(item.heading),
+        body: text(item.body) || text(item.description) || text(item.notes),
+      });
+    });
+    return out;
+  }
+  if (!Array.isArray(row.destinations)) return [];
+  row.destinations.forEach((entry, index) => {
+    if (typeof entry === "string") {
+      out.push({ id: entry, name: `Stop ${index + 1}` });
+      return;
+    }
+    if (!entry || typeof entry !== "object") return;
+    const dest = entry as Record<string, unknown>;
+    out.push({
+      id: asId(dest),
+      name: text(dest.name) || `Stop ${index + 1}`,
+      region: text(dest.region),
+    });
+  });
+  return out;
+}
+
 function mapItem(row: Record<string, unknown>, kind: CatalogKind): CatalogItem | null {
   const id = asId(row);
-  const name = typeof row.name === "string" ? row.name.trim() : "";
+  const name = text(row.name);
   if (!id || !name || !isPublished(row)) return null;
-  const description =
-    (typeof row.description === "string" && row.description) ||
-    (typeof row.summary === "string" && row.summary) ||
-    "";
-  const gallery = Array.isArray(row.images)
-    ? row.images
-        .map((img) => {
-          const url = imageUrl(img as RawImage);
-          return url
-            ? { url, name: typeof img === "object" && img && "name" in img ? String(img.name || "") : "" }
-            : null;
-        })
-        .filter((img): img is { url: string; name: string } => img != null)
-    : [];
+  const gallery = mapImages(row);
   const main = imageUrl(row.mainImage as RawImage) || gallery[0]?.url;
-  const location =
-    row.location &&
-    typeof row.location === "object" &&
-    row.location !== null &&
-    "lat" in row.location &&
-    "lng" in row.location
-      ? {
-          lat: Number((row.location as { lat: number }).lat),
-          lng: Number((row.location as { lng: number }).lng),
-        }
-      : null;
+  const duration =
+    typeof row.durationDays === "number" && row.durationDays > 0
+      ? row.durationDays
+      : undefined;
   return {
     id,
     name,
-    description,
-    region: typeof row.region === "string" && row.region.trim() ? row.region.trim() : undefined,
+    description: text(row.description) || text(row.summary) || "",
+    region: text(row.region),
     imageUrl: main,
     images: gallery,
-    location,
+    location: mapLocation(row),
     capacity: typeof row.capacity === "number" ? row.capacity : undefined,
     ownership: kind === "vehicles" && typeof row.ownership === "string" ? row.ownership : undefined,
+    durationDays: duration,
+    stops: kind === "tours" ? mapStops(row) : [],
   };
 }
 
@@ -80,106 +143,25 @@ function rowsFrom(json: unknown): Record<string, unknown>[] {
   return [];
 }
 
-let adminToken: string | null = null;
-
-async function adminLogin(): Promise<string | null> {
-  const email = process.env.TOUR_API_ADMIN_EMAIL;
-  const password = process.env.TOUR_API_ADMIN_PASSWORD;
-  if (!email || !password) return null;
-  if (adminToken) return adminToken;
-  const { res, json } = await apiGetJson("/admin/auth/login", {
-    method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok || !json?.accessToken) return null;
-  adminToken = json.accessToken as string;
-  return adminToken;
-}
-
-async function readList(
-  kind: CatalogKind,
-): Promise<{ items: CatalogItem[]; missing: boolean }> {
-  const pubPath = `/pub/${kind}?isActive=true&limit=${LIST_LIMIT}`;
-  const { res, json } = await apiGetJson(pubPath);
-  if (res.ok) {
-    return {
-      items: rowsFrom(json)
-        .map((row) => mapItem(row, kind))
-        .filter((item): item is CatalogItem => item != null),
-      missing: false,
-    };
-  }
-  if (res.status !== 404 && res.status !== 401) {
+async function readList(kind: CatalogKind): Promise<CatalogItem[]> {
+  const { res, json } = await apiGetJson(`/pub/${kind}?isActive=true&limit=${LIST_LIMIT}`);
+  if (!res.ok) {
+    if (res.status === 404) return [];
     throw new Error(json?.message || `Catalog ${kind} failed (${res.status})`);
   }
-
-  const token = await adminLogin();
-  if (!token) {
-    return { items: [], missing: true };
-  }
-  const adminPath =
-    kind === "vehicles"
-      ? `/admin/vehicles?isActive=true&limit=${LIST_LIMIT}`
-      : kind === "tours"
-        ? `/admin/tours?isActive=true&limit=${LIST_LIMIT}`
-        : `/admin/destinations?isActive=true&limit=${LIST_LIMIT}`;
-  const admin = await apiGetJson(adminPath, {
-    headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
-  });
-  if (admin.res.status === 401) {
-    adminToken = null;
-    const retry = await adminLogin();
-    if (!retry) return { items: [], missing: true };
-    const again = await apiGetJson(adminPath, {
-      headers: { Accept: "application/json", Authorization: `Bearer ${retry}` },
-    });
-    if (again.res.status === 404) return { items: [], missing: true };
-    if (!again.res.ok) {
-      throw new Error(again.json?.message || `Catalog ${kind} failed`);
-    }
-    return {
-      items: rowsFrom(again.json)
-        .map((row) => mapItem(row, kind))
-        .filter((item): item is CatalogItem => item != null),
-      missing: false,
-    };
-  }
-  if (admin.res.status === 404) {
-    return { items: [], missing: true };
-  }
-  if (!admin.res.ok) {
-    throw new Error(admin.json?.message || `Catalog ${kind} failed`);
-  }
-  return {
-    items: rowsFrom(admin.json)
-      .map((row) => mapItem(row, kind))
-      .filter((item): item is CatalogItem => item != null),
-    missing: false,
-  };
+  return rowsFrom(json)
+    .map((row) => mapItem(row, kind))
+    .filter((item): item is CatalogItem => item != null);
 }
 
 async function readOne(kind: CatalogKind, id: string): Promise<CatalogItem | null> {
-  const encoded = encodeURIComponent(id);
-  const pub = await apiGetJson(`/pub/${kind}/${encoded}`);
-  if (pub.res.ok && pub.json && typeof pub.json === "object") {
-    return mapItem(pub.json as Record<string, unknown>, kind);
+  const { res, json } = await apiGetJson(`/pub/${kind}/${encodeURIComponent(id)}`);
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(json?.message || "Item could not be loaded.");
   }
-  const token = await adminLogin();
-  if (!token) {
-    if (pub.res.status === 404) return null;
-    throw new Error(pub.json?.message || "Item could not be loaded.");
-  }
-  const adminKind =
-    kind === "vehicles" ? "vehicles" : kind === "tours" ? "tours" : "destinations";
-  const admin = await apiGetJson(`/admin/${adminKind}/${encoded}`, {
-    headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
-  });
-  if (admin.res.status === 404) return null;
-  if (!admin.res.ok) {
-    throw new Error(admin.json?.message || "Item could not be loaded.");
-  }
-  return mapItem(admin.json as Record<string, unknown>, kind);
+  if (!json || typeof json !== "object") return null;
+  return mapItem(json as Record<string, unknown>, kind);
 }
 
 export async function listCatalog(kind: CatalogKind): Promise<CatalogResult<CatalogItem>> {
@@ -187,16 +169,7 @@ export async function listCatalog(kind: CatalogKind): Promise<CatalogResult<Cata
     return { status: "error", message: "NEXT_PUBLIC_API_URL is not set." };
   }
   try {
-    const { items, missing } = await readList(kind);
-    if (missing && kind === "tours") {
-      return { status: "empty" };
-    }
-    if (missing) {
-      return {
-        status: "error",
-        message: "The public catalog is not on the API yet.",
-      };
-    }
+    const items = await readList(kind);
     if (items.length === 0) return { status: "empty" };
     return { status: "ok", items };
   } catch (error) {

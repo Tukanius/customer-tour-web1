@@ -6,9 +6,10 @@ import { useEffect, useId, useRef, useState } from "react";
 import { LogoMark } from "./LogoMark";
 
 const NAV_LINKS = [
-  { href: "/destinations", label: "Destinations" },
+  { href: "/", label: "Home" },
   { href: "/tours", label: "Tours" },
-  { href: "/car-rent", label: "Car Rent" },
+  { href: "/destinations", label: "Destinations" },
+  { href: "/car-rent", label: "Car Rental" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ] as const;
@@ -20,16 +21,12 @@ export function Navbar() {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
+      if (event.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -40,32 +37,29 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-paper/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:h-[4.25rem] sm:px-6 lg:gap-3 lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-paper/90 shadow-[0_8px_30px_-24px_rgb(15_23_42_/_0.5)] backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:h-[4.25rem] sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="flex min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azure"
+            className="flex min-w-0 items-center gap-2.5 rounded-lg"
           >
             <LogoMark className="h-8 w-8 shrink-0 sm:h-9 sm:w-9" />
             <span className="truncate font-display text-lg tracking-tight text-ink sm:text-xl">
               Nomad Atlas
             </span>
           </Link>
-          <nav
-            className="ml-2 hidden items-center gap-0.5 lg:flex"
-            aria-label="Primary"
-          >
+          <nav className="ml-4 hidden items-center gap-0.5 lg:flex" aria-label="Primary">
             {NAV_LINKS.map((link) => {
               const active =
-                pathname === link.href || pathname.startsWith(`${link.href}/`);
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={`rounded-full px-2.5 py-1.5 text-sm transition-colors ${
-                    active
-                      ? "bg-sand text-ink"
-                      : "text-muted hover:bg-sand hover:text-ink"
+                    active ? "bg-mist text-ocean" : "text-muted hover:bg-mist hover:text-ink"
                   }`}
                 >
                   {link.label}
@@ -73,11 +67,8 @@ export function Navbar() {
               );
             })}
           </nav>
-          <Link
-            href="/#trip-request"
-            className="btn-primary ml-auto whitespace-nowrap max-lg:!hidden lg:inline-flex"
-          >
-            Plan my trip
+          <Link href="/contact" className="btn-primary ml-auto max-lg:!hidden lg:inline-flex">
+            Plan My Trip
           </Link>
           <button
             type="button"
@@ -104,7 +95,7 @@ export function Navbar() {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="absolute inset-y-0 right-0 flex w-[min(22rem,100%)] flex-col overflow-y-auto border-l border-line bg-paper p-5 shadow-xl"
+            className="absolute inset-y-0 right-0 flex w-[min(22rem,100%)] flex-col overflow-y-auto border-l border-line bg-paper p-5 shadow-2xl"
           >
             <div className="flex items-center justify-between">
               <p className="font-display text-lg text-ink">Nomad Atlas</p>
@@ -114,8 +105,8 @@ export function Navbar() {
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line"
                 onClick={() => setOpen(false)}
               >
-                <span className="sr-only">Close menu</span>
-                <CloseIcon />
+                <span className="sr-only">Dismiss menu</span>
+                ×
               </button>
             </div>
             <nav className="mt-8 flex flex-col gap-1" aria-label="Mobile">
@@ -123,19 +114,15 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-xl px-3 py-3 text-base text-ink hover:bg-sand"
+                  className="rounded-xl px-3 py-3 text-base text-ink hover:bg-mist"
                   onClick={() => setOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
             </nav>
-            <Link
-              href="/#trip-request"
-              className="btn-primary mt-8"
-              onClick={() => setOpen(false)}
-            >
-              Plan my trip
+            <Link href="/contact" className="btn-primary mt-8" onClick={() => setOpen(false)}>
+              Plan My Trip
             </Link>
           </div>
         </div>
@@ -149,19 +136,6 @@ function MenuIcon() {
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
       <path
         d="M5 7h14M5 12h14M5 17h10"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-      <path
-        d="M7 7l10 10M17 7L7 17"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"

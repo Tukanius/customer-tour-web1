@@ -56,9 +56,7 @@ export interface ContactContent {
   title: string;
   lede: string;
   channels: {
-    phone: ContactChannel;
     email: ContactChannel;
-    whatsapp: ContactChannel;
   };
   office: ContactOffice;
   social: SocialLink[];
@@ -93,5 +91,4 @@ export interface SiteCopy {
   footerDeskLabel: string;
   copyright: string;
   footerLinks: FooterLink[];
-  subNav: FooterLink[];
 }

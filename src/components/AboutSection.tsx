@@ -1,38 +1,36 @@
 import Link from "next/link";
 import { aboutContent } from "@/data/travelData";
-import { SiteSubNav } from "./SiteSubNav";
 
 export function AboutSection() {
   const about = aboutContent;
 
   return (
     <div>
-      <section className="border-b border-line bg-paper">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-10 lg:px-8 lg:py-20">
+      <section className="bg-paper">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-8 lg:py-20">
           <div className="lg:col-span-5">
-            <SiteSubNav current="/about" />
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
               {about.eyebrow}
             </p>
             <h1 className="mt-3 font-display text-4xl tracking-tight text-ink sm:text-5xl">
               {about.title}
             </h1>
           </div>
-          <div className="mt-6 space-y-4 text-muted leading-7 lg:col-span-7 lg:mt-10">
+          <div className="mt-6 space-y-4 text-muted leading-7 lg:col-span-7 lg:mt-8">
             <p className="text-lg text-ink/90">{about.lede}</p>
             {about.mission.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
-            <Link href="/#trip-request" className="btn-primary mt-4 inline-flex">
-              Plan my trip
+            <Link href="/contact" className="btn-primary mt-4 inline-flex">
+              Plan My Trip
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="border-b border-line bg-sand/35">
+      <section className="border-t border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
             {about.reasonsEyebrow}
           </p>
           <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
@@ -42,7 +40,7 @@ export function AboutSection() {
             {about.reasons.map((reason) => (
               <li
                 key={reason.title}
-                className="rounded-2xl border border-line bg-paper p-5"
+                className="rounded-3xl border border-line bg-paper p-6 shadow-sm"
               >
                 <h3 className="font-display text-xl text-ink">{reason.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">{reason.body}</p>
@@ -52,9 +50,9 @@ export function AboutSection() {
         </div>
       </section>
 
-      <section className="bg-paper">
+      <section className="border-t border-line bg-paper">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
             {about.stepsEyebrow}
           </p>
           <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
@@ -64,9 +62,9 @@ export function AboutSection() {
             {about.steps.map((step) => (
               <li
                 key={step.number}
-                className="rounded-2xl border border-line bg-sand/30 p-5"
+                className="rounded-3xl border border-line bg-mist/50 p-6"
               >
-                <p className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-ink text-xs font-semibold text-paper">
+                <p className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-ocean text-xs font-semibold text-white">
                   {step.number}
                 </p>
                 <h3 className="mt-4 font-display text-xl text-ink">{step.title}</h3>
