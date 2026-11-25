@@ -72,7 +72,7 @@ export function Navbar() {
           </nav>
           <Link
             href="/#trip-request"
-            className="btn-primary ml-auto hidden whitespace-nowrap lg:inline-flex"
+            className="btn-primary ml-auto whitespace-nowrap max-lg:!hidden lg:inline-flex"
           >
             Plan my trip
           </Link>

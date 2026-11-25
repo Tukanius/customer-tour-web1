@@ -3,7 +3,7 @@ import { siteCopy } from "@/data/travelData";
 
 export function SiteSubNav({ current }: { current: "/about" | "/contact" }) {
   return (
-    <nav aria-label="Studio" className="mb-8 flex flex-wrap gap-2">
+    <nav aria-label="Studio" className="mb-5 flex flex-wrap gap-2">
       {siteCopy.subNav.map((link) => {
         const active = current === link.href;
         return (

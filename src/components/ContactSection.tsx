@@ -54,7 +54,7 @@ export function ContactSection() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+    <div className="mx-auto max-w-6xl px-4 pb-14 pt-6 sm:px-6 lg:px-8 lg:pb-20 lg:pt-8">
       <SiteSubNav current="/contact" />
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-azure">
         {copy.eyebrow}
@@ -64,38 +64,44 @@ export function ContactSection() {
       </h1>
       <p className="mt-4 max-w-xl text-muted leading-7">{copy.lede}</p>
 
-      <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <aside className="space-y-6">
-          <dl className="space-y-4 rounded-2xl border border-line bg-sand/30 p-5">
-            <Channel
-              label={copy.channels.phone.label}
-              href={copy.channels.phone.href}
-              display={copy.channels.phone.display}
-            />
-            <Channel
-              label={copy.channels.email.label}
-              href={copy.channels.email.href}
-              display={copy.channels.email.display}
-            />
-            <Channel
-              label={copy.channels.whatsapp.label}
-              href={copy.channels.whatsapp.href}
-              display={copy.channels.whatsapp.display}
-            />
-            <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+      <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <aside id="contact-desk" className="scroll-mt-24 space-y-4">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <li className="rounded-2xl border border-line bg-sand/30 p-4">
+              <Channel
+                label={copy.channels.phone.label}
+                href={copy.channels.phone.href}
+                display={copy.channels.phone.display}
+              />
+            </li>
+            <li className="rounded-2xl border border-line bg-sand/30 p-4">
+              <Channel
+                label={copy.channels.email.label}
+                href={copy.channels.email.href}
+                display={copy.channels.email.display}
+              />
+            </li>
+            <li className="rounded-2xl border border-line bg-sand/30 p-4">
+              <Channel
+                label={copy.channels.whatsapp.label}
+                href={copy.channels.whatsapp.href}
+                display={copy.channels.whatsapp.display}
+              />
+            </li>
+            <li className="rounded-2xl border border-line bg-sand/30 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
                 {copy.office.label}
-              </dt>
-              <dd className="mt-1 text-sm leading-6 text-ink">
+              </p>
+              <p className="mt-1 text-sm leading-5 text-ink">
                 {copy.office.lines.map((line) => (
                   <span key={line} className="block">
                     {line}
                   </span>
                 ))}
-                <span className="mt-2 block text-muted">{copy.office.hours}</span>
-              </dd>
-            </div>
-          </dl>
+                <span className="mt-1.5 block text-muted">{copy.office.hours}</span>
+              </p>
+            </li>
+          </ul>
           <ul className="flex flex-wrap gap-2">
             {copy.social.map((item) => (
               <li key={item.label}>
@@ -253,14 +259,12 @@ function Channel({
 }) {
   return (
     <div>
-      <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
         {label}
-      </dt>
-      <dd className="mt-1 text-sm">
-        <a className="text-ink hover:text-azure" href={href}>
-          {display}
-        </a>
-      </dd>
+      </p>
+      <a className="mt-1 block text-sm text-ink hover:text-azure" href={href}>
+        {display}
+      </a>
     </div>
   );
 }
