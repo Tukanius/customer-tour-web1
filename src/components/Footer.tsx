@@ -1,14 +1,10 @@
 import Link from "next/link";
+import { contactContent, siteCopy } from "@/data/travelData";
 import { LogoMark } from "./LogoMark";
 
-const LINKS = [
-  { href: "/destinations", label: "Destinations" },
-  { href: "/tours", label: "Tours" },
-  { href: "/car-rent", label: "Car Rent" },
-  { href: "/#trip-request", label: "Plan a trip" },
-] as const;
-
 export function Footer() {
+  const { channels, office, social } = contactContent;
+
   return (
     <footer className="border-t border-line bg-ink text-paper">
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 md:grid-cols-3 lg:px-8">
@@ -18,16 +14,15 @@ export function Footer() {
             <p className="font-display text-xl">Nomad Atlas</p>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-6 text-paper/75">
-            Private journeys across Mongolia. Original sample copy for this
-            demo — not affiliated with any existing operator.
+            {siteCopy.footerBlurb}
           </p>
         </div>
         <nav aria-label="Footer">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-paper/55">
-            Map
+            {siteCopy.footerMapLabel}
           </p>
           <ul className="mt-3 space-y-2 text-sm">
-            {LINKS.map((link) => (
+            {siteCopy.footerLinks.map((link) => (
               <li key={link.href}>
                 <Link className="hover:text-sand" href={link.href}>
                   {link.label}
@@ -38,25 +33,43 @@ export function Footer() {
         </nav>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-paper/55">
-            Desk
+            {siteCopy.footerDeskLabel}
           </p>
           <address className="mt-3 not-italic text-sm leading-7 text-paper/80">
-            Chinggis Avenue, Ulaanbaatar
+            {office.lines[0]}
             <br />
-            <a className="hover:text-sand" href="mailto:hello@nomadatlas.example">
-              hello@nomadatlas.example
+            <a className="hover:text-sand" href={channels.email.href}>
+              {channels.email.display}
             </a>
             <br />
-            <a className="hover:text-sand" href="tel:+97611000000">
-              +976 11 000 000
+            <a className="hover:text-sand" href={channels.phone.href}>
+              {channels.phone.display}
             </a>
+            <br />
+            <a className="hover:text-sand" href={channels.whatsapp.href}>
+              WhatsApp {channels.whatsapp.display}
+            </a>
+            <span className="mt-2 block text-paper/60">{office.hours}</span>
           </address>
+          <ul className="mt-4 flex flex-wrap gap-3 text-sm">
+            {social.map((item) => (
+              <li key={item.label}>
+                <a
+                  className="rounded-full border border-paper/20 px-3 py-1 hover:bg-paper/10"
+                  href={item.href}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
       <div className="border-t border-paper/10">
         <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-paper/55 sm:px-6 lg:px-8">
-          © 2026 Nomad Atlas. All rights reserved. Placeholder brand for
-          demonstration.
+          {siteCopy.copyright}
         </p>
       </div>
     </footer>
