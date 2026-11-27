@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useLightboxOptional } from "./ImageLightbox";
 
 export function ModalSheet({
   isOpen,
@@ -23,6 +24,7 @@ export function ModalSheet({
   const closeRef = useRef<HTMLButtonElement>(null);
   const lastFocus = useRef<HTMLElement | null>(null);
   const dragStart = useRef<number | null>(null);
+  const lightbox = useLightboxOptional();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -31,6 +33,7 @@ export function ModalSheet({
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
+      if (lightbox?.isOpen) return;
       if (event.key === "Escape") onClose();
       if (event.key !== "Tab" || !panelRef.current) return;
       const nodes = panelRef.current.querySelectorAll<HTMLElement>(
@@ -53,7 +56,7 @@ export function ModalSheet({
       window.removeEventListener("keydown", onKey);
       lastFocus.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, lightbox?.isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -70,7 +73,7 @@ export function ModalSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        className="absolute inset-x-0 bottom-0 flex max-h-[95vh] min-h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-paper shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(90vh,880px)] md:w-[min(90vw,880px)] md:max-h-[90vh] md:min-h-0 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
+        className="absolute inset-x-0 bottom-0 flex max-h-[95vh] min-h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-paper shadow-2xl md:inset-auto md:left-1/2 md:top-1/2 md:h-[min(92vh,920px)] md:w-[min(94vw,1100px)] md:max-h-[92vh] md:min-h-0 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl"
         onPointerDown={(event) => {
           if ((event.target as HTMLElement).dataset.handle !== "sheet") return;
           dragStart.current = event.clientY;

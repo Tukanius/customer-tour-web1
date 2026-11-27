@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { CatalogSheetProvider } from "@/components/CatalogSheet";
 import { Footer } from "@/components/Footer";
 import { GlobalContactActions } from "@/components/GlobalContactActions";
+import { LightboxProvider } from "@/components/ImageLightbox";
 import { Navbar } from "@/components/Navbar";
 import { uiCopy } from "@/data/uiCopy";
 import "./globals.css";
@@ -47,19 +48,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           {uiCopy.skip}
         </a>
-        <CatalogSheetProvider>
-          <Suspense fallback={<div className="h-16 sm:h-[4.25rem]" />}>
-            <Navbar />
-          </Suspense>
-          <div className="h-16 shrink-0 sm:h-[4.25rem]" aria-hidden="true" />
-          <main id="main" className="flex-1 pb-[calc(var(--dock-h)+0.75rem)] md:pb-8">
-            {children}
-          </main>
-          <Footer />
-          <Suspense fallback={null}>
-            <GlobalContactActions />
-          </Suspense>
-        </CatalogSheetProvider>
+        <LightboxProvider>
+          <CatalogSheetProvider>
+            <Suspense fallback={<div className="h-16 sm:h-[4.25rem]" />}>
+              <Navbar />
+            </Suspense>
+            <div className="h-16 shrink-0 sm:h-[4.25rem]" aria-hidden="true" />
+            <main id="main" className="flex-1 pb-[calc(var(--dock-h)+0.75rem)] md:pb-8">
+              {children}
+            </main>
+            <Footer />
+            <Suspense fallback={null}>
+              <GlobalContactActions />
+            </Suspense>
+          </CatalogSheetProvider>
+        </LightboxProvider>
       </body>
     </html>
   );

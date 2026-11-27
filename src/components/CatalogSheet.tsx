@@ -10,10 +10,11 @@ import {
 } from "react";
 import Link from "next/link";
 import { API_URL } from "@/lib/api";
-import { mapCatalogItem } from "@/lib/catalog";
+import { galleryFor, mapCatalogItem } from "@/lib/catalog";
 import { uiCopy } from "@/data/uiCopy";
 import { vehicleWhatsappHref, whatsappHref } from "@/lib/contact";
 import type { CatalogItem, CatalogKind } from "@/types/catalog";
+import { ImageGallery, MediaImage } from "./MediaImage";
 import { MapsLink } from "./MapsLink";
 import { ModalSheet, SheetSkeleton } from "./ModalSheet";
 import { WhatsAppIcon } from "./WhatsAppIcon";
@@ -117,14 +118,17 @@ export function DestinationProfile({
 }) {
   const generatedId = useId();
   const headingId = titleId ?? generatedId;
+  const gallery = galleryFor(item);
+  const extra = item.images.filter((image) => image.url !== item.imageUrl);
   return (
     <div>
-      {item.imageUrl ? (
-        <div className={`overflow-hidden bg-mist ${compact ? "h-52 rounded-2xl" : "h-64 sm:h-80 md:h-[28rem]"}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
-        </div>
-      ) : null}
+      <MediaImage
+        image={item.profileImage || (item.imageUrl ? { url: item.imageUrl, name: item.name } : undefined)}
+        images={gallery}
+        index={0}
+        label={uiCopy.tours.noPhoto}
+        variant="sheet"
+      />
       <div className={compact ? "pt-5" : "mx-auto max-w-3xl px-4 py-10 sm:px-6"}>
         {item.region ? (
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ocean">
@@ -150,20 +154,7 @@ export function DestinationProfile({
             {uiCopy.whatsapp}
           </a>
         </div>
-        {item.images.length > 1 ? (
-          <ul className="mt-8 grid grid-cols-2 gap-3">
-            {item.images.map((image) => (
-              <li key={image.url} className="overflow-hidden rounded-2xl bg-mist">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={image.url}
-                  alt={image.name || ""}
-                  className="h-28 w-full object-cover sm:h-36"
-                />
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {extra.length > 0 ? <ImageGallery images={extra} all={gallery} /> : null}
       </div>
     </div>
   );
@@ -180,14 +171,17 @@ export function VehicleProfile({
 }) {
   const generatedId = useId();
   const headingId = titleId ?? generatedId;
+  const gallery = galleryFor(item);
+  const extra = item.images.filter((image) => image.url !== item.imageUrl);
   return (
     <div>
-      {item.imageUrl ? (
-        <div className={`overflow-hidden bg-mist ${compact ? "h-52 rounded-2xl" : "h-64 sm:h-80 md:h-[28rem]"}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
-        </div>
-      ) : null}
+      <MediaImage
+        image={item.profileImage || (item.imageUrl ? { url: item.imageUrl, name: item.name } : undefined)}
+        images={gallery}
+        index={0}
+        label={uiCopy.tours.noPhoto}
+        variant="sheet"
+      />
       <div className={compact ? "pt-5" : "mx-auto max-w-3xl px-4 py-10 sm:px-6"}>
         {item.price ? (
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ocean">
@@ -232,20 +226,7 @@ export function VehicleProfile({
             {uiCopy.planTrip}
           </Link>
         </div>
-        {item.images.length > 1 ? (
-          <ul className="mt-8 grid grid-cols-2 gap-3">
-            {item.images.map((image) => (
-              <li key={image.url} className="overflow-hidden rounded-2xl bg-mist">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={image.url}
-                  alt={image.name || ""}
-                  className="h-28 w-full object-cover sm:h-36"
-                />
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {extra.length > 0 ? <ImageGallery images={extra} all={gallery} /> : null}
       </div>
     </div>
   );

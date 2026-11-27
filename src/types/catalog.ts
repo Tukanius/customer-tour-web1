@@ -3,12 +3,22 @@ export interface CatalogImage {
   name?: string;
 }
 
-export interface TourStop {
+export interface NamedRef {
   id: string;
   name: string;
   region?: string;
-  title?: string;
-  body?: string;
+}
+
+export interface TourDay {
+  day: number;
+  name?: string;
+  description?: string;
+  travelDistance?: string;
+  travelTime?: string;
+  activities: NamedRef[];
+  destinations: NamedRef[];
+  meals: string[];
+  overnight?: string;
 }
 
 export interface CatalogItem {
@@ -16,7 +26,10 @@ export interface CatalogItem {
   name: string;
   description: string;
   region?: string;
+  date?: string;
   imageUrl?: string;
+  profileImage?: CatalogImage;
+  mapImage?: CatalogImage;
   images: CatalogImage[];
   location?: { lat: number; lng: number } | null;
   capacity?: number;
@@ -26,7 +39,7 @@ export interface CatalogItem {
   price?: string;
   specs: string[];
   conditions?: string;
-  stops: TourStop[];
+  days: TourDay[];
 }
 
 export type CatalogKind = "destinations" | "tours" | "vehicles";

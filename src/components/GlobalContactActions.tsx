@@ -4,11 +4,13 @@ import Link from "next/link";
 import { uiCopy } from "@/data/uiCopy";
 import { whatsappHref } from "@/lib/contact";
 import { useCatalogSheet } from "./CatalogSheet";
+import { useLightboxOptional } from "./ImageLightbox";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 
 export function GlobalContactActions() {
   const { isOpen } = useCatalogSheet();
-  if (isOpen) return null;
+  const lightbox = useLightboxOptional();
+  if (isOpen || lightbox?.isOpen) return null;
 
   return (
     <>

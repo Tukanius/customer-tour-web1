@@ -4,7 +4,8 @@ import type {
   CatalogItem,
   CatalogKind,
   CatalogResult,
-  TourStop,
+  NamedRef,
+  TourDay,
 } from "@/types/catalog";
 
 const LIST_LIMIT = 100;
@@ -67,47 +68,141 @@ function mapLocation(row: Record<string, unknown>) {
   return { lat, lng };
 }
 
-function destinationRef(value: unknown): { id: string; name?: string; region?: string } {
-  if (typeof value === "string" && value) return { id: value };
-  if (!value || typeof value !== "object") return { id: "" };
-  const dest = value as Record<string, unknown>;
-  return {
-    id: asId(dest),
-    name: text(dest.name),
-    region: text(dest.region),
-  };
+function namedRef(value: unknown): NamedRef | null {
+  if (typeof value === "string" && value.trim()) {
+    const raw = value.trim();
+    if (/^[a-f0-9]{24}$/i.test(raw)) return null;
+    return { id: raw, name: raw };
+  }
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const name = text(row.name) || text(row.title) || text(row.dayName);
+  const id = asId(row);
+  if (!name && !id) return null;
+  if (!name) return null;
+  return { id, name, region: text(row.region) };
 }
 
-function mapStops(row: Record<string, unknown>): TourStop[] {
-  const itinerary = row.itinerary ?? row.days ?? row.stops;
-  const out: TourStop[] = [];
-  if (Array.isArray(itinerary) && itinerary.length > 0) {
-    for (const entry of itinerary) {
-      if (!entry || typeof entry !== "object") continue;
-      const item = entry as Record<string, unknown>;
-      const dest = destinationRef(item.destination);
-      const name = text(item.name) || dest.name;
-      if (!name) continue;
-      out.push({
-        id: dest.id,
-        name,
-        region: dest.region || text(item.region),
-        title: text(item.title) || text(item.day) || text(item.heading),
-        body: text(item.body) || text(item.description) || text(item.notes),
-      });
+function namedList(value: unknown): NamedRef[] {
+  if (!Array.isArray(value)) {
+    const single = namedRef(value);
+    return single ? [single] : [];
+  }
+  const out: NamedRef[] = [];
+  for (const entry of value) {
+    const item = namedRef(entry);
+    if (!item) continue;
+    if (out.some((existing) => existing.id && existing.id === item.id)) continue;
+    out.push(item);
+  }
+  return out;
+}
+
+function mapMeals(item: Record<string, unknown>): string[] {
+  const labels: string[] = [];
+  const add = (value: unknown, fallback?: string) => {
+    if (value === true && fallback) labels.push(fallback);
+    else {
+      const t = text(value);
+      if (t) labels.push(t);
     }
-    return out;
+  };
+  if (Array.isArray(item.meals)) {
+    for (const meal of item.meals) add(meal);
+    return labels;
   }
-  if (!Array.isArray(row.destinations)) return [];
-  for (const entry of row.destinations) {
-    const dest = destinationRef(entry);
-    if (!dest.id && !dest.name) continue;
+  const meals = item.meals;
+  if (meals && typeof meals === "object") {
+    const bag = meals as Record<string, unknown>;
+    add(bag.breakfast, "Breakfast");
+    add(bag.lunch, "Lunch");
+    add(bag.dinner, "Dinner");
+    return labels;
+  }
+  add(item.breakfast, "Breakfast");
+  add(item.lunch, "Lunch");
+  add(item.dinner, "Dinner");
+  return labels;
+}
+
+function formatTravelTime(item: Record<string, unknown>): string | undefined {
+  const preset = text(item.travelTime);
+  if (preset) return preset;
+  const hoursRaw = item.travelHours ?? item.hours;
+  const minutesRaw = item.travelMinutes ?? item.minutes;
+  const hours = typeof hoursRaw === "number" && hoursRaw > 0 ? hoursRaw : 0;
+  const minutes = typeof minutesRaw === "number" && minutesRaw > 0 ? minutesRaw : 0;
+  if (!hours && !minutes) return undefined;
+  const parts: string[] = [];
+  if (hours) parts.push(`${hours}h`);
+  if (minutes) parts.push(`${minutes}m`);
+  return parts.join(" ");
+}
+
+function formatDistance(item: Record<string, unknown>): string | undefined {
+  const preset = text(item.travelDistance) || text(item.distance);
+  if (preset) return preset;
+  const km = item.travelDistanceKm ?? item.distanceKm;
+  if (typeof km === "number" && Number.isFinite(km) && km > 0) return `${km} km`;
+  if (typeof km === "string" && km.trim()) return km.trim();
+  return undefined;
+}
+
+function mapImage(value: RawImage, fallbackName = ""): CatalogImage | undefined {
+  const url = imageUrl(value);
+  if (!url) return undefined;
+  const name =
+    typeof value === "object" && value && "name" in value
+      ? String(value.name || fallbackName)
+      : fallbackName;
+  return { url, name };
+}
+
+function mapTourDays(row: Record<string, unknown>): TourDay[] {
+  const itinerary = row.itinerary ?? row.days ?? row.tourDays ?? row.stops;
+  if (!Array.isArray(itinerary) || itinerary.length === 0) return [];
+  const out: TourDay[] = [];
+  itinerary.forEach((entry) => {
+    if (!entry || typeof entry !== "object") return;
+    const item = entry as Record<string, unknown>;
+    const destinations = namedList(
+      item.destinations ?? item.destination,
+    );
+    const name =
+      text(item.dayName) ||
+      text(item.name) ||
+      text(item.title) ||
+      destinations[0]?.name;
+    const description = text(item.description) || text(item.body) || text(item.notes);
+    const travelDistance = formatDistance(item);
+    const travelTime = formatTravelTime(item);
+    const activities = namedList(item.activities);
+    const meals = mapMeals(item);
+    const overnight = text(item.overnight) || text(item.accommodation);
+    if (
+      !name &&
+      !description &&
+      !travelDistance &&
+      !travelTime &&
+      activities.length === 0 &&
+      destinations.length === 0 &&
+      meals.length === 0 &&
+      !overnight
+    ) {
+      return;
+    }
     out.push({
-      id: dest.id,
-      name: dest.name || dest.id,
-      region: dest.region,
+      day: out.length + 1,
+      name,
+      description,
+      travelDistance,
+      travelTime,
+      activities,
+      destinations,
+      meals,
+      overnight,
     });
-  }
+  });
   return out;
 }
 
@@ -143,36 +238,62 @@ function mapSpecs(row: Record<string, unknown>, kind: CatalogKind): string[] {
   return specs;
 }
 
+function mapDuration(row: Record<string, unknown>, days: TourDay[]): number | undefined {
+  if (typeof row.durationDays === "number" && row.durationDays > 0) return row.durationDays;
+  if (typeof row.duration === "number" && row.duration > 0) return row.duration;
+  const parsed = Number.parseInt(String(row.duration ?? ""), 10);
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  if (days.length > 0) return days.length;
+  return undefined;
+}
+
 export function mapCatalogItem(
   row: Record<string, unknown>,
   kind: CatalogKind,
 ): CatalogItem | null {
   const id = asId(row);
-  const name = text(row.name);
+  const name = text(row.title) || text(row.name);
   if (!id || !name || !isPublished(row)) return null;
   const gallery = mapImages(row);
-  const main = imageUrl(row.mainImage as RawImage) || gallery[0]?.url;
-  const duration =
-    typeof row.durationDays === "number" && row.durationDays > 0
-      ? row.durationDays
-      : undefined;
+  const profile =
+    mapImage(row.profileImage as RawImage, name) ||
+    mapImage(row.mainImage as RawImage, name) ||
+    gallery[0];
+  const map = mapImage(row.mapImage as RawImage, "Map");
+  const days = kind === "tours" ? mapTourDays(row) : [];
   return {
     id,
     name,
     description: text(row.description) || text(row.summary) || "",
     region: text(row.region),
-    imageUrl: main,
+    date: text(row.date),
+    imageUrl: profile?.url,
+    profileImage: profile,
+    mapImage: map,
     images: gallery,
     location: mapLocation(row),
     capacity: typeof row.capacity === "number" ? row.capacity : undefined,
     ownership: kind === "vehicles" && typeof row.ownership === "string" ? row.ownership : undefined,
-    durationDays: duration,
+    durationDays: mapDuration(row, days),
     featured: row.isFeatured === true || row.featured === true,
     price: kind === "vehicles" ? mapPrice(row) : undefined,
     specs: kind === "vehicles" ? mapSpecs(row, kind) : [],
     conditions: kind === "vehicles" ? mapConditions(row) : undefined,
-    stops: kind === "tours" ? mapStops(row) : [],
+    days,
   };
+}
+
+export function galleryFor(item: CatalogItem): CatalogImage[] {
+  const out: CatalogImage[] = [];
+  const add = (image?: CatalogImage) => {
+    if (!image?.url) return;
+    if (out.some((existing) => existing.url === image.url)) return;
+    out.push(image);
+  };
+  add(item.profileImage || (item.imageUrl ? { url: item.imageUrl, name: item.name } : undefined));
+  add(item.mapImage);
+  for (const image of item.images) add(image);
+  return out;
 }
 
 export function pickFeatured(items: CatalogItem[], count = 3): CatalogItem[] {

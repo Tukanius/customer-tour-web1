@@ -3,12 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { StatusCard } from "@/components/CatalogCard";
+import { ImageGallery, MediaImage } from "@/components/MediaImage";
 import { MapsLink } from "@/components/MapsLink";
 import { TourItinerary } from "@/components/TourItinerary";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { uiCopy } from "@/data/uiCopy";
 import { ApiDownError } from "@/lib/api";
-import { getTour } from "@/lib/catalog";
+import { galleryFor, getTour } from "@/lib/catalog";
 import { whatsappHref } from "@/lib/contact";
 
 export async function generateMetadata({
@@ -50,19 +51,46 @@ async function TourBody({ params }: { params: Promise<{ slug: string }> }) {
   if (!tour) notFound();
   const kicker = [
     tour.durationDays ? uiCopy.cards.days(tour.durationDays) : null,
+    tour.date,
     tour.region,
   ]
     .filter(Boolean)
     .join(" · ");
+  const gallery = galleryFor(tour);
+  const extra = tour.images.filter(
+    (image) => image.url !== tour.profileImage?.url && image.url !== tour.mapImage?.url,
+  );
+  const profileIndex = gallery.findIndex((image) => image.url === tour.profileImage?.url);
+  const mapIndex = gallery.findIndex((image) => image.url === tour.mapImage?.url);
 
   return (
     <article>
-      {tour.imageUrl ? (
-        <div className="h-64 overflow-hidden bg-mist sm:h-80 md:h-[28rem]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={tour.imageUrl} alt="" className="h-full w-full object-cover" />
+      <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-ocean">
+              {uiCopy.tours.profile}
+            </p>
+            <MediaImage
+              image={tour.profileImage}
+              images={gallery}
+              index={profileIndex >= 0 ? profileIndex : 0}
+              label={uiCopy.tours.noPhoto}
+            />
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-ocean">
+              {uiCopy.tours.map}
+            </p>
+            <MediaImage
+              image={tour.mapImage}
+              images={gallery}
+              index={mapIndex >= 0 ? mapIndex : Math.max(gallery.length - 1, 0)}
+              label={uiCopy.tours.noPhoto}
+            />
+          </div>
         </div>
-      ) : null}
+      </div>
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         {kicker ? (
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
@@ -87,28 +115,15 @@ async function TourBody({ params }: { params: Promise<{ slug: string }> }) {
             {uiCopy.whatsapp}
           </a>
         </div>
-        {tour.stops.length > 0 ? (
+        {tour.days.length > 0 ? (
           <section className="mt-12">
             <h2 className="font-display text-2xl text-ink">{uiCopy.tours.itinerary}</h2>
             <div className="mt-6">
-              <TourItinerary stops={tour.stops} />
+              <TourItinerary days={tour.days} />
             </div>
           </section>
         ) : null}
-        {tour.images.length > 1 ? (
-          <ul className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {tour.images.map((image) => (
-              <li key={image.url} className="overflow-hidden rounded-2xl bg-mist">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={image.url}
-                  alt={image.name || ""}
-                  className="h-36 w-full object-cover sm:h-44"
-                />
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {extra.length > 0 ? <ImageGallery images={extra} all={gallery} /> : null}
       </div>
     </article>
   );
