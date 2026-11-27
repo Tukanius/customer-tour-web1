@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { StatusCard } from "@/components/CatalogCard";
-import { DestinationGrid, EmptyCatalog, GridSkeleton } from "@/components/CatalogGrids";
+import { CardSkeleton } from "@/components/CardSkeleton";
+import { DestinationGrid, EmptyCatalog } from "@/components/CatalogGrids";
 import { uiCopy } from "@/data/uiCopy";
 import { listDestinations } from "@/lib/catalog";
 
@@ -18,7 +19,7 @@ export default function DestinationsPage() {
       </h1>
       <p className="mt-4 max-w-xl text-muted leading-7">{uiCopy.destinations.lede}</p>
       <div className="mt-10">
-        <Suspense fallback={<GridSkeleton />}>
+        <Suspense fallback={<CardSkeleton />}>
           <DestinationsBody />
         </Suspense>
       </div>

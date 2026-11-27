@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { CatalogGrid, EmptyCatalog, GridSkeleton } from "@/components/CatalogGrids";
+import { CardSkeleton } from "@/components/CardSkeleton";
+import { CatalogGrid, EmptyCatalog } from "@/components/CatalogGrids";
 import { StatusCard } from "@/components/CatalogCard";
 import { Hero } from "@/components/Hero";
 import { uiCopy } from "@/data/uiCopy";
@@ -142,7 +143,7 @@ function HomeBlockSkeleton({ title, lede }: { title: string; lede: string }) {
         <h2 className="font-display text-3xl text-ink">{title}</h2>
         <p className="mt-2 text-muted">{lede}</p>
         <div className="mt-10">
-          <GridSkeleton />
+          <CardSkeleton />
         </div>
       </div>
     </section>

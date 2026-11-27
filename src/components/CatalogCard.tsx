@@ -92,16 +92,3 @@ export function StatusCard({ title, body }: { title: string; body: string }) {
     </div>
   );
 }
-
-export function CardSkeleton() {
-  return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper">
-      <div className="aspect-[4/3] animate-pulse bg-mist" />
-      <div className="flex flex-1 flex-col space-y-3 p-4">
-        <div className="h-3 w-24 animate-pulse rounded bg-mist" />
-        <div className="h-6 w-3/4 animate-pulse rounded bg-mist" />
-        <div className="h-10 animate-pulse rounded bg-mist/70" />
-      </div>
-    </div>
-  );
-}

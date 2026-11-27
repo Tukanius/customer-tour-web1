@@ -15,9 +15,6 @@ export function GlobalContactActions() {
   return (
     <>
       <div className="pointer-events-none fixed bottom-6 right-4 z-40 hidden flex-col items-end gap-3 md:flex lg:right-6">
-        <Link href="/contact" className="btn-primary pointer-events-auto px-4 py-2 text-sm shadow-lg">
-          {uiCopy.planTrip}
-        </Link>
         <a
           href={whatsappHref()}
           target="_blank"

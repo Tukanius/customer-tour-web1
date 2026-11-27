@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { StatusCard } from "@/components/CatalogCard";
-import { EmptyCatalog, GridSkeleton, VehicleGrid } from "@/components/CatalogGrids";
+import { CardSkeleton } from "@/components/CardSkeleton";
+import { EmptyCatalog, VehicleGrid } from "@/components/CatalogGrids";
 import { uiCopy } from "@/data/uiCopy";
 import { listVehicles } from "@/lib/catalog";
 
@@ -18,7 +19,7 @@ export default function CarRentPage() {
       </h1>
       <p className="mt-4 max-w-xl text-muted leading-7">{uiCopy.cars.lede}</p>
       <div className="mt-10">
-        <Suspense fallback={<GridSkeleton />}>
+        <Suspense fallback={<CardSkeleton />}>
           <VehiclesBody />
         </Suspense>
       </div>

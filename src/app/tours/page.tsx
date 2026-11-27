@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { StatusCard } from "@/components/CatalogCard";
-import { EmptyCatalog, GridSkeleton, TourGrid } from "@/components/CatalogGrids";
+import { CardSkeleton } from "@/components/CardSkeleton";
+import { EmptyCatalog, TourGrid } from "@/components/CatalogGrids";
 import { uiCopy } from "@/data/uiCopy";
 import { listTours } from "@/lib/catalog";
 
@@ -18,7 +19,7 @@ export default function ToursPage() {
       </h1>
       <p className="mt-4 max-w-xl text-muted leading-7">{uiCopy.tours.lede}</p>
       <div className="mt-10">
-        <Suspense fallback={<GridSkeleton />}>
+        <Suspense fallback={<CardSkeleton />}>
           <ToursBody />
         </Suspense>
       </div>

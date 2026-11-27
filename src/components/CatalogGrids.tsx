@@ -2,10 +2,8 @@
 
 import { uiCopy } from "@/data/uiCopy";
 import type { CatalogItem, CatalogKind } from "@/types/catalog";
-import { CardSkeleton, CatalogCard, StatusCard } from "./CatalogCard";
-
-const GRID =
-  "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 [&>li]:h-full [&>li>article]:h-full";
+import { catalogGridClass } from "./CardSkeleton";
+import { CatalogCard, StatusCard } from "./CatalogCard";
 
 export function CatalogGrid({
   items,
@@ -15,7 +13,7 @@ export function CatalogGrid({
   kind: CatalogKind;
 }) {
   return (
-    <ul className={GRID}>
+    <ul className={catalogGridClass}>
       {items.map((item) => (
         <li key={item.id}>
           <CatalogCard item={item} kind={kind} />
@@ -45,16 +43,4 @@ export function EmptyCatalog({ kind }: { kind: CatalogKind }) {
         ? uiCopy.cars.empty
         : uiCopy.destinations.empty;
   return <StatusCard title={uiCopy.status.emptyTitle} body={body} />;
-}
-
-export function GridSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <ul className={GRID}>
-      {Array.from({ length: count }, (_, index) => (
-        <li key={index}>
-          <CardSkeleton />
-        </li>
-      ))}
-    </ul>
-  );
 }
