@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Newsreader } from "next/font/google";
 import { Suspense } from "react";
-import { DestinationSheetProvider } from "@/components/DestinationSheet";
+import { CatalogSheetProvider } from "@/components/CatalogSheet";
 import { Footer } from "@/components/Footer";
 import { GlobalContactActions } from "@/components/GlobalContactActions";
 import { Navbar } from "@/components/Navbar";
+import { uiCopy } from "@/data/uiCopy";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -21,11 +22,10 @@ const figtree = Figtree({
 
 export const metadata: Metadata = {
   title: {
-    default: "Nomad Atlas — Private journeys in Mongolia",
+    default: "Nomad Atlas — Explore Mongolia",
     template: "%s · Nomad Atlas",
   },
-  description:
-    "Nomad Atlas plans private 4x4 expeditions, ger camps, and nomad homestays across Mongolia’s Gobi, Altai, central grasslands, and northern lakes.",
+  description: "Tours, destinations, and car rental in Mongolia.",
 };
 
 export const viewport: Viewport = {
@@ -45,9 +45,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[90] focus:rounded-full focus:bg-ocean focus:px-4 focus:py-2 focus:text-white"
         >
-          Skip to content
+          {uiCopy.skip}
         </a>
-        <DestinationSheetProvider>
+        <CatalogSheetProvider>
           <Suspense fallback={<div className="h-16 sm:h-[4.25rem]" />}>
             <Navbar />
           </Suspense>
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Suspense fallback={null}>
             <GlobalContactActions />
           </Suspense>
-        </DestinationSheetProvider>
+        </CatalogSheetProvider>
       </body>
     </html>
   );

@@ -8,6 +8,10 @@ export function whatsappHref(message: string = WHATSAPP_PREFILL) {
   return `https://wa.me/${WHATSAPP_E164_DIGITS}?text=${encodeURIComponent(message)}`;
 }
 
+export function vehicleWhatsappHref(name: string) {
+  return whatsappHref(`Hello! I would like to learn more about the ${name}.`);
+}
+
 export function googleMapsSearchUrl(lat: number, lng: number) {
   return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }

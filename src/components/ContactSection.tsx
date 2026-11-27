@@ -58,10 +58,7 @@ export function ContactSection() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
-        {copy.eyebrow}
-      </p>
-      <h1 className="mt-3 max-w-2xl font-display text-4xl tracking-tight text-ink sm:text-5xl">
+      <h1 className="max-w-2xl font-display text-4xl tracking-tight text-ink sm:text-5xl">
         {copy.title}
       </h1>
       <p className="mt-4 max-w-xl text-muted leading-7">{copy.lede}</p>
@@ -99,12 +96,16 @@ export function ContactSection() {
                 {copy.office.label}
               </p>
               <p className="mt-1 text-sm leading-6 text-ink">
-                {copy.office.lines.map((line) => (
-                  <span key={line} className="block">
-                    {line}
-                  </span>
-                ))}
-                <span className="mt-1.5 block text-muted">{copy.office.hours}</span>
+                {copy.office.lines
+                  .filter((line) => line.trim())
+                  .map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                {copy.office.hours ? (
+                  <span className="mt-1.5 block text-muted">{copy.office.hours}</span>
+                ) : null}
               </p>
             </li>
           </ul>

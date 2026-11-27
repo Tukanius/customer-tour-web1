@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { ContactSection } from "@/components/ContactSection";
+import { uiCopy } from "@/data/uiCopy";
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description:
-    "Write to Nomad Atlas for a custom tour, a 4x4 rental, or a general question. Ulaanbaatar office, email, and WhatsApp.",
+  title: uiCopy.contact.title,
+  description: uiCopy.contact.lede,
 };
 
 export default function ContactPage() {

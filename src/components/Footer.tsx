@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { contactContent, siteCopy } from "@/data/travelData";
+import { contactContent } from "@/data/travelData";
+import { uiCopy } from "@/data/uiCopy";
 import { whatsappHref, WHATSAPP_DISPLAY } from "@/lib/contact";
 import { LogoMark } from "./LogoMark";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 
 export function Footer() {
   const { channels, office } = contactContent;
+  const officeLines = office.lines.filter((line) => line.trim());
 
   return (
     <footer className="border-t border-line bg-ink pb-[var(--dock-h)] text-paper">
@@ -13,18 +15,18 @@ export function Footer() {
         <div>
           <div className="flex items-center gap-2.5">
             <LogoMark className="h-9 w-9" />
-            <p className="font-display text-xl">Nomad Atlas</p>
+            <p className="font-display text-xl">{uiCopy.brand}</p>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-6 text-paper/75">
-            {siteCopy.footerBlurb}
+            {uiCopy.footer.blurb}
           </p>
         </div>
         <nav aria-label="Footer">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-paper/55">
-            {siteCopy.footerMapLabel}
+            {uiCopy.footer.links}
           </p>
           <ul className="mt-3 space-y-2 text-sm">
-            {siteCopy.footerLinks.map((link) => (
+            {uiCopy.nav.map((link) => (
               <li key={link.href}>
                 <Link className="hover:text-sky" href={link.href}>
                   {link.label}
@@ -35,15 +37,17 @@ export function Footer() {
         </nav>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-paper/55">
-            {siteCopy.footerDeskLabel}
+            {uiCopy.footer.contact}
           </p>
           <address className="mt-3 not-italic text-sm leading-7 text-paper/80">
-            {office.lines[0]}
-            <br />
-            <a className="hover:text-sky" href={channels.email.href}>
+            {officeLines.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+            <a className="block hover:text-sky" href={channels.email.href}>
               {channels.email.display}
             </a>
-            <br />
             <a
               className="inline-flex items-center gap-2 hover:text-sky"
               href={whatsappHref()}
@@ -51,15 +55,17 @@ export function Footer() {
               target="_blank"
             >
               <WhatsAppIcon className="h-4 w-4 text-whatsapp" />
-              WhatsApp {WHATSAPP_DISPLAY}
+              {uiCopy.whatsapp} {WHATSAPP_DISPLAY}
             </a>
-            <span className="mt-2 block text-paper/60">{office.hours}</span>
+            {office.hours ? (
+              <span className="mt-2 block text-paper/60">{office.hours}</span>
+            ) : null}
           </address>
         </div>
       </div>
       <div className="border-t border-paper/10">
         <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-paper/55 sm:px-6 lg:px-8">
-          {siteCopy.copyright}
+          {uiCopy.footer.copyright}
         </p>
       </div>
     </footer>

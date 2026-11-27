@@ -3,16 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { uiCopy } from "@/data/uiCopy";
 import { LogoMark } from "./LogoMark";
-
-const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/tours", label: "Tours" },
-  { href: "/destinations", label: "Destinations" },
-  { href: "/car-rent", label: "Car Rental" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-] as const;
 
 export function Navbar() {
   const pathname = usePathname();
@@ -39,17 +31,14 @@ export function Navbar() {
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-paper/90 shadow-[0_8px_30px_-24px_rgb(15_23_42_/_0.5)] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:h-[4.25rem] sm:px-6 lg:px-8">
-          <Link
-            href="/"
-            className="flex min-w-0 items-center gap-2.5 rounded-lg"
-          >
+          <Link href="/" className="flex min-w-0 items-center gap-2.5 rounded-lg">
             <LogoMark className="h-8 w-8 shrink-0 sm:h-9 sm:w-9" />
             <span className="truncate font-display text-lg tracking-tight text-ink sm:text-xl">
-              Nomad Atlas
+              {uiCopy.brand}
             </span>
           </Link>
           <nav className="ml-4 hidden items-center gap-0.5 lg:flex" aria-label="Primary">
-            {NAV_LINKS.map((link) => {
+            {uiCopy.nav.map((link) => {
               const active =
                 link.href === "/"
                   ? pathname === "/"
@@ -68,7 +57,7 @@ export function Navbar() {
             })}
           </nav>
           <Link href="/contact" className="btn-primary ml-auto max-lg:!hidden lg:inline-flex">
-            Plan My Trip
+            {uiCopy.planTrip}
           </Link>
           <button
             type="button"
@@ -77,7 +66,7 @@ export function Navbar() {
             aria-controls={drawerId}
             onClick={() => setOpen(true)}
           >
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{uiCopy.openMenu}</span>
             <MenuIcon />
           </button>
         </div>
@@ -87,7 +76,7 @@ export function Navbar() {
           <button
             type="button"
             className="absolute inset-0 bg-ink/40"
-            aria-label="Close menu"
+            aria-label={uiCopy.closeMenu}
             onClick={() => setOpen(false)}
           />
           <div
@@ -98,19 +87,19 @@ export function Navbar() {
             className="absolute inset-y-0 right-0 flex w-[min(22rem,100%)] flex-col overflow-y-auto border-l border-line bg-paper p-5 shadow-2xl"
           >
             <div className="flex items-center justify-between">
-              <p className="font-display text-lg text-ink">Nomad Atlas</p>
+              <p className="font-display text-lg text-ink">{uiCopy.brand}</p>
               <button
                 ref={closeButtonRef}
                 type="button"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line"
                 onClick={() => setOpen(false)}
               >
-                <span className="sr-only">Dismiss menu</span>
+                <span className="sr-only">{uiCopy.dismissMenu}</span>
                 ×
               </button>
             </div>
             <nav className="mt-8 flex flex-col gap-1" aria-label="Mobile">
-              {NAV_LINKS.map((link) => (
+              {uiCopy.nav.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -122,7 +111,7 @@ export function Navbar() {
               ))}
             </nav>
             <Link href="/contact" className="btn-primary mt-8" onClick={() => setOpen(false)}>
-              Plan My Trip
+              {uiCopy.planTrip}
             </Link>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { aboutContent } from "@/data/travelData";
+import { uiCopy } from "@/data/uiCopy";
 
 export function AboutSection() {
   const about = aboutContent;
@@ -9,12 +10,10 @@ export function AboutSection() {
       <section className="bg-paper">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-8 lg:py-20">
           <div className="lg:col-span-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
-              {about.eyebrow}
-            </p>
-            <h1 className="mt-3 font-display text-4xl tracking-tight text-ink sm:text-5xl">
-              {about.title}
+            <h1 className="font-display text-4xl tracking-tight text-ink sm:text-5xl">
+              {uiCopy.about.title}
             </h1>
+            <p className="mt-4 text-lg text-muted">{uiCopy.about.lede}</p>
           </div>
           <div className="mt-6 space-y-4 text-muted leading-7 lg:col-span-7 lg:mt-8">
             <p className="text-lg text-ink/90">{about.lede}</p>
@@ -22,7 +21,7 @@ export function AboutSection() {
               <p key={paragraph}>{paragraph}</p>
             ))}
             <Link href="/contact" className="btn-primary mt-4 inline-flex">
-              Plan My Trip
+              {uiCopy.planTrip}
             </Link>
           </div>
         </div>
@@ -30,17 +29,14 @@ export function AboutSection() {
 
       <section className="border-t border-line bg-canvas">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
-            {about.reasonsEyebrow}
-          </p>
-          <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
+          <h2 className="max-w-2xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
             {about.reasonsTitle}
           </h2>
           <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {about.reasons.map((reason) => (
               <li
                 key={reason.title}
-                className="rounded-3xl border border-line bg-paper p-6 shadow-sm"
+                className="rounded-2xl border border-line bg-paper p-6 shadow-sm"
               >
                 <h3 className="font-display text-xl text-ink">{reason.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">{reason.body}</p>
@@ -52,18 +48,12 @@ export function AboutSection() {
 
       <section className="border-t border-line bg-paper">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
-            {about.stepsEyebrow}
-          </p>
-          <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
+          <h2 className="max-w-2xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
             {about.stepsTitle}
           </h2>
           <ol className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3">
             {about.steps.map((step) => (
-              <li
-                key={step.number}
-                className="rounded-3xl border border-line bg-mist/50 p-6"
-              >
+              <li key={step.number} className="rounded-2xl border border-line bg-mist/50 p-6">
                 <p className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-ocean text-xs font-semibold text-white">
                   {step.number}
                 </p>

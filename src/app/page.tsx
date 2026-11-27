@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { DestinationGrid, EmptyCatalog, GridSkeleton, TourGrid, VehicleGrid } from "@/components/CatalogGrids";
+import { CatalogGrid, EmptyCatalog, GridSkeleton } from "@/components/CatalogGrids";
+import { StatusCard } from "@/components/CatalogCard";
 import { Hero } from "@/components/Hero";
-import { StatusCard } from "@/components/PhotoCard";
-import { listDestinations, listTours, listVehicles } from "@/lib/catalog";
-import type { CatalogItem, CatalogResult } from "@/types/catalog";
+import { uiCopy } from "@/data/uiCopy";
+import { listDestinations, listTours, listVehicles, pickFeatured } from "@/lib/catalog";
+import type { CatalogItem, CatalogKind, CatalogResult } from "@/types/catalog";
 
 export default function Home() {
   return (
@@ -12,13 +13,15 @@ export default function Home() {
       <Suspense fallback={<Hero />}>
         <HomeHero />
       </Suspense>
-      <Suspense fallback={<HomeBlockSkeleton eyebrow="Tours" title="Set routes, when they are live." />}>
+      <Suspense fallback={<HomeBlockSkeleton title={uiCopy.tours.title} lede={uiCopy.tours.lede} />}>
         <HomeTours />
       </Suspense>
-      <Suspense fallback={<HomeBlockSkeleton eyebrow="Destinations" title="Places on the published map." />}>
+      <Suspense
+        fallback={<HomeBlockSkeleton title={uiCopy.destinations.title} lede={uiCopy.destinations.lede} />}
+      >
         <HomeDestinations />
       </Suspense>
-      <Suspense fallback={<HomeBlockSkeleton eyebrow="Car rental" title="4x4s on the board." />}>
+      <Suspense fallback={<HomeBlockSkeleton title={uiCopy.cars.title} lede={uiCopy.cars.lede} />}>
         <HomeVehicles />
       </Suspense>
     </>
@@ -39,10 +42,10 @@ async function HomeTours() {
   return (
     <HomeBlock
       id="tours"
-      eyebrow="Tours"
-      title="Featured routes from the desk."
+      title={uiCopy.tours.title}
+      lede={uiCopy.tours.lede}
       moreHref="/tours"
-      moreLabel="Show More Tours"
+      moreLabel={uiCopy.tours.more}
       result={result}
       kind="tours"
     />
@@ -54,10 +57,10 @@ async function HomeDestinations() {
   return (
     <HomeBlock
       id="destinations"
-      eyebrow="Destinations"
-      title="Places worth the kilometres."
+      title={uiCopy.destinations.title}
+      lede={uiCopy.destinations.lede}
       moreHref="/destinations"
-      moreLabel="Show More Destinations"
+      moreLabel={uiCopy.destinations.more}
       result={result}
       kind="destinations"
     />
@@ -67,60 +70,49 @@ async function HomeDestinations() {
 async function HomeVehicles() {
   const result = await listVehicles();
   return (
-    <section id="car-rental" className="border-t border-line bg-paper py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
-          Car rental
-        </p>
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-          <h2 className="max-w-xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
-            Expedition 4x4s on the board.
-          </h2>
-          <Link href="/car-rent" className="btn-secondary">
-            Explore Car Rental
-          </Link>
-        </div>
-        <div className="mt-10">
-          <CatalogSlice result={result} kind="vehicles" preview={3} />
-        </div>
-      </div>
-    </section>
+    <HomeBlock
+      id="car-rental"
+      title={uiCopy.cars.title}
+      lede={uiCopy.cars.lede}
+      moreHref="/car-rent"
+      moreLabel={uiCopy.cars.more}
+      result={result}
+      kind="vehicles"
+    />
   );
 }
 
 function HomeBlock({
   id,
-  eyebrow,
   title,
+  lede,
   moreHref,
   moreLabel,
   result,
   kind,
 }: {
   id: string;
-  eyebrow: string;
   title: string;
+  lede: string;
   moreHref: string;
   moreLabel: string;
   result: CatalogResult<CatalogItem>;
-  kind: "tours" | "destinations";
+  kind: CatalogKind;
 }) {
   return (
-    <section id={id} className="border-t border-line bg-canvas py-16 sm:py-20">
+    <section id={id} className="border-t border-line bg-canvas py-14 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
-          {eyebrow}
-        </p>
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-          <h2 className="max-w-xl font-display text-3xl tracking-tight text-ink sm:text-4xl">
-            {title}
-          </h2>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-3xl tracking-tight text-ink sm:text-4xl">{title}</h2>
+            <p className="mt-2 max-w-xl text-muted">{lede}</p>
+          </div>
           <Link href={moreHref} className="btn-secondary">
             {moreLabel}
           </Link>
         </div>
         <div className="mt-10">
-          <CatalogSlice result={result} kind={kind} preview={4} />
+          <CatalogSlice result={result} kind={kind} />
         </div>
       </div>
     </section>
@@ -130,32 +122,25 @@ function HomeBlock({
 function CatalogSlice({
   result,
   kind,
-  preview,
 }: {
   result: CatalogResult<CatalogItem>;
-  kind: "tours" | "destinations" | "vehicles";
-  preview: number;
+  kind: CatalogKind;
 }) {
   if (result.status === "error") {
-    return <StatusCard title="The desk is unreachable" body={result.message} />;
+    return <StatusCard title={uiCopy.status.unreachable} body={result.message} />;
   }
   if (result.status === "empty") {
     return <EmptyCatalog kind={kind} />;
   }
-  const items = result.items.slice(0, preview);
-  if (kind === "tours") return <TourGrid items={items} />;
-  if (kind === "vehicles") return <VehicleGrid items={items} />;
-  return <DestinationGrid items={items} />;
+  return <CatalogGrid items={pickFeatured(result.items, 3)} kind={kind} />;
 }
 
-function HomeBlockSkeleton({ eyebrow, title }: { eyebrow: string; title: string }) {
+function HomeBlockSkeleton({ title, lede }: { title: string; lede: string }) {
   return (
-    <section className="border-t border-line bg-canvas py-16">
+    <section className="border-t border-line bg-canvas py-14">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ocean">
-          {eyebrow}
-        </p>
-        <h2 className="mt-3 font-display text-3xl text-ink">{title}</h2>
+        <h2 className="font-display text-3xl text-ink">{title}</h2>
+        <p className="mt-2 text-muted">{lede}</p>
         <div className="mt-10">
           <GridSkeleton />
         </div>

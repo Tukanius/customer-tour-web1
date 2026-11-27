@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { StatusCard } from "@/components/CatalogCard";
 import { MapsLink } from "@/components/MapsLink";
-import { StatusCard } from "@/components/PhotoCard";
 import { TourItinerary } from "@/components/TourItinerary";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
+import { uiCopy } from "@/data/uiCopy";
 import { ApiDownError } from "@/lib/api";
 import { getTour } from "@/lib/catalog";
 import { whatsappHref } from "@/lib/contact";
@@ -16,10 +17,10 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const tour = await getTour(slug);
-    if (!tour) return { title: "Tour not found" };
+    if (!tour) return { title: uiCopy.status.tourMissing };
     return { title: tour.name, description: tour.description || tour.name };
   } catch {
-    return { title: "Tours" };
+    return { title: uiCopy.tours.title };
   }
 }
 
@@ -40,7 +41,7 @@ async function TourBody({ params }: { params: Promise<{ slug: string }> }) {
     if (error instanceof ApiDownError) {
       return (
         <div className="mx-auto max-w-3xl px-4 py-16">
-          <StatusCard title="The desk is unreachable" body={error.message} />
+          <StatusCard title={uiCopy.status.unreachable} body={error.message} />
         </div>
       );
     }
@@ -48,7 +49,7 @@ async function TourBody({ params }: { params: Promise<{ slug: string }> }) {
   }
   if (!tour) notFound();
   const kicker = [
-    tour.durationDays ? `${tour.durationDays} days` : null,
+    tour.durationDays ? uiCopy.cards.days(tour.durationDays) : null,
     tour.region,
   ]
     .filter(Boolean)
@@ -79,20 +80,16 @@ async function TourBody({ params }: { params: Promise<{ slug: string }> }) {
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <MapsLink location={tour.location} />
           <Link href="/contact" className="btn-primary">
-            Plan My Trip
+            {uiCopy.planTrip}
           </Link>
           <a href={whatsappHref()} className="btn-secondary" target="_blank" rel="noreferrer">
             <WhatsAppIcon />
-            WhatsApp
+            {uiCopy.whatsapp}
           </a>
         </div>
         {tour.stops.length > 0 ? (
           <section className="mt-12">
-            <h2 className="font-display text-2xl text-ink">Itinerary</h2>
-            <p className="mt-2 max-w-xl text-sm text-muted">
-              Stops published on this tour. Open a destination for photos and
-              the map.
-            </p>
+            <h2 className="font-display text-2xl text-ink">{uiCopy.tours.itinerary}</h2>
             <div className="mt-6">
               <TourItinerary stops={tour.stops} />
             </div>

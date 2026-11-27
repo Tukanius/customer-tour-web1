@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { DestinationProfile } from "@/components/DestinationSheet";
-import { StatusCard } from "@/components/PhotoCard";
+import { StatusCard } from "@/components/CatalogCard";
+import { DestinationProfile } from "@/components/CatalogSheet";
+import { uiCopy } from "@/data/uiCopy";
 import { ApiDownError } from "@/lib/api";
 import { getDestination } from "@/lib/catalog";
 
@@ -12,13 +13,13 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const destination = await getDestination(slug);
-    if (!destination) return { title: "Place not found" };
+    if (!destination) return { title: uiCopy.status.destinationMissing };
     return {
       title: destination.name,
       description: destination.description || destination.name,
     };
   } catch {
-    return { title: "Destinations" };
+    return { title: uiCopy.destinations.title };
   }
 }
 
@@ -49,7 +50,7 @@ async function DestinationBody({
     if (error instanceof ApiDownError) {
       return (
         <div className="mx-auto max-w-3xl px-4 py-16">
-          <StatusCard title="The desk is unreachable" body={error.message} />
+          <StatusCard title={uiCopy.status.unreachable} body={error.message} />
         </div>
       );
     }

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { AboutSection } from "@/components/AboutSection";
+import { uiCopy } from "@/data/uiCopy";
 
 export const metadata: Metadata = {
-  title: "About",
-  description:
-    "Nomad Atlas is a Mongolian expedition studio. We plan private travel across the Gobi, the Altai, the central steppe, and the northern lakes.",
+  title: uiCopy.about.title,
+  description: uiCopy.about.lede,
 };
 
 export default function AboutPage() {

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import type { TourStop } from "@/types/catalog";
-import { useDestinationSheet } from "./DestinationSheet";
+import { uiCopy } from "@/data/uiCopy";
+import { useCatalogSheet } from "./CatalogSheet";
 
 export function TourItinerary({ stops }: { stops: TourStop[] }) {
-  const { openDestination } = useDestinationSheet();
+  const { openDestination } = useCatalogSheet();
   const [open, setOpen] = useState<number | null>(0);
   if (stops.length === 0) return null;
 
@@ -46,7 +47,7 @@ export function TourItinerary({ stops }: { stops: TourStop[] }) {
                       className="text-sm font-semibold text-ocean hover:underline"
                       onClick={() => openDestination(stop.id)}
                     >
-                      Open destination
+                      {uiCopy.tours.viewDestination}
                     </button>
                   ) : null}
                 </div>

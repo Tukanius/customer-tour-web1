@@ -1,3 +1,4 @@
+import { uiCopy } from "@/data/uiCopy";
 import { googleMapsSearchUrl, hasCoords } from "@/lib/contact";
 
 export function MapsLink({
@@ -16,7 +17,7 @@ export function MapsLink({
       className={`inline-flex items-center gap-2 text-sm font-semibold text-ocean hover:underline ${className}`}
     >
       <LocationIcon />
-      Open in Google Maps
+      {uiCopy.maps}
     </a>
   );
 }

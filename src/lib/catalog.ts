@@ -111,7 +111,42 @@ function mapStops(row: Record<string, unknown>): TourStop[] {
   return out;
 }
 
-function mapItem(row: Record<string, unknown>, kind: CatalogKind): CatalogItem | null {
+function mapPrice(row: Record<string, unknown>): string | undefined {
+  const raw = row.price ?? row.dailyPrice ?? row.rate ?? row.rentalPrice;
+  if (typeof raw === "number" && Number.isFinite(raw)) return String(raw);
+  return text(raw);
+}
+
+function mapConditions(row: Record<string, unknown>): string | undefined {
+  return text(row.conditions) || text(row.terms) || text(row.rentalConditions);
+}
+
+function mapSpecs(row: Record<string, unknown>, kind: CatalogKind): string[] {
+  const specs: string[] = [];
+  if (kind === "vehicles" && typeof row.capacity === "number" && row.capacity > 0) {
+    specs.push(row.capacity === 1 ? "1 seat" : `${row.capacity} seats`);
+  }
+  if (kind === "vehicles" && row.ownership === "OWN") specs.push("Company vehicle");
+  if (kind === "vehicles" && row.ownership === "RENTED") specs.push("Partner vehicle");
+  const extra = row.specs ?? row.specifications;
+  if (Array.isArray(extra)) {
+    for (const entry of extra) {
+      const value = text(entry);
+      if (value && !specs.includes(value)) specs.push(value);
+    }
+  }
+  for (const key of ["engine", "transmission", "fuel", "year"] as const) {
+    const raw = row[key];
+    const value = typeof raw === "number" && Number.isFinite(raw) ? String(raw) : text(raw);
+    if (value && !specs.includes(value)) specs.push(value);
+  }
+  return specs;
+}
+
+export function mapCatalogItem(
+  row: Record<string, unknown>,
+  kind: CatalogKind,
+): CatalogItem | null {
   const id = asId(row);
   const name = text(row.name);
   if (!id || !name || !isPublished(row)) return null;
@@ -132,8 +167,19 @@ function mapItem(row: Record<string, unknown>, kind: CatalogKind): CatalogItem |
     capacity: typeof row.capacity === "number" ? row.capacity : undefined,
     ownership: kind === "vehicles" && typeof row.ownership === "string" ? row.ownership : undefined,
     durationDays: duration,
+    featured: row.isFeatured === true || row.featured === true,
+    price: kind === "vehicles" ? mapPrice(row) : undefined,
+    specs: kind === "vehicles" ? mapSpecs(row, kind) : [],
+    conditions: kind === "vehicles" ? mapConditions(row) : undefined,
     stops: kind === "tours" ? mapStops(row) : [],
   };
+}
+
+export function pickFeatured(items: CatalogItem[], count = 3): CatalogItem[] {
+  const featured = items.filter((item) => item.featured);
+  if (featured.length === 0) return items.slice(0, count);
+  const rest = items.filter((item) => !item.featured);
+  return [...featured, ...rest].slice(0, count);
 }
 
 function rowsFrom(json: unknown): Record<string, unknown>[] {
@@ -151,7 +197,7 @@ async function readList(kind: CatalogKind): Promise<CatalogItem[]> {
     throw new Error(json?.message || `Catalog ${kind} failed (${res.status})`);
   }
   return rowsFrom(json)
-    .map((row) => mapItem(row, kind))
+    .map((row) => mapCatalogItem(row, kind))
     .filter((item): item is CatalogItem => item != null);
 }
 
@@ -162,12 +208,12 @@ async function readOne(kind: CatalogKind, id: string): Promise<CatalogItem | nul
     throw new Error(json?.message || "Item could not be loaded.");
   }
   if (!json || typeof json !== "object") return null;
-  return mapItem(json as Record<string, unknown>, kind);
+  return mapCatalogItem(json as Record<string, unknown>, kind);
 }
 
 export async function listCatalog(kind: CatalogKind): Promise<CatalogResult<CatalogItem>> {
   if (!API_URL) {
-    return { status: "error", message: "NEXT_PUBLIC_API_URL is not set." };
+    return { status: "error", message: "Could not load this list. Please try again." };
   }
   try {
     const items = await readList(kind);
@@ -179,7 +225,7 @@ export async function listCatalog(kind: CatalogKind): Promise<CatalogResult<Cata
     }
     return {
       status: "error",
-      message: error instanceof Error ? error.message : "The catalog could not be loaded.",
+      message: error instanceof Error ? error.message : "Could not load this list. Please try again.",
     };
   }
 }

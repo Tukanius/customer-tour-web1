@@ -1,56 +1,55 @@
 "use client";
 
-import type { CatalogItem } from "@/types/catalog";
-import { DestinationCard, TourCard, VehicleCard, StatusCard, CardSkeleton } from "./PhotoCard";
+import { uiCopy } from "@/data/uiCopy";
+import type { CatalogItem, CatalogKind } from "@/types/catalog";
+import { CardSkeleton, CatalogCard, StatusCard } from "./CatalogCard";
 
-export function DestinationGrid({ items }: { items: CatalogItem[] }) {
+const GRID =
+  "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 [&>li]:h-full [&>li>article]:h-full";
+
+export function CatalogGrid({
+  items,
+  kind,
+}: {
+  items: CatalogItem[];
+  kind: CatalogKind;
+}) {
   return (
-    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <ul className={GRID}>
       {items.map((item) => (
         <li key={item.id}>
-          <DestinationCard item={item} />
+          <CatalogCard item={item} kind={kind} />
         </li>
       ))}
     </ul>
   );
+}
+
+export function DestinationGrid({ items }: { items: CatalogItem[] }) {
+  return <CatalogGrid items={items} kind="destinations" />;
 }
 
 export function TourGrid({ items }: { items: CatalogItem[] }) {
-  return (
-    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      {items.map((item) => (
-        <li key={item.id}>
-          <TourCard item={item} />
-        </li>
-      ))}
-    </ul>
-  );
+  return <CatalogGrid items={items} kind="tours" />;
 }
 
 export function VehicleGrid({ items }: { items: CatalogItem[] }) {
-  return (
-    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-      {items.map((item) => (
-        <li key={item.id}>
-          <VehicleCard item={item} />
-        </li>
-      ))}
-    </ul>
-  );
+  return <CatalogGrid items={items} kind="vehicles" />;
 }
 
-export function EmptyCatalog({ kind }: { kind: "tours" | "destinations" | "vehicles" }) {
-  const copy = {
-    tours: "No tours are published yet.",
-    destinations: "No destinations are published yet.",
-    vehicles: "No vehicles are published yet.",
-  };
-  return <StatusCard title="Nothing published" body={copy[kind]} />;
+export function EmptyCatalog({ kind }: { kind: CatalogKind }) {
+  const body =
+    kind === "tours"
+      ? uiCopy.tours.empty
+      : kind === "vehicles"
+        ? uiCopy.cars.empty
+        : uiCopy.destinations.empty;
+  return <StatusCard title={uiCopy.status.emptyTitle} body={body} />;
 }
 
 export function GridSkeleton({ count = 3 }: { count?: number }) {
   return (
-    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <ul className={GRID}>
       {Array.from({ length: count }, (_, index) => (
         <li key={index}>
           <CardSkeleton />

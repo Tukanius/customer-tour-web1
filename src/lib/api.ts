@@ -10,7 +10,7 @@ const FETCH_INIT: RequestInit = {
 };
 
 export class ApiDownError extends Error {
-  constructor(message = "The travel desk could not be reached.") {
+  constructor(message = "Could not load this list. Please try again.") {
     super(message);
     this.name = "ApiDownError";
   }
@@ -59,15 +59,15 @@ export async function postInquiry(payload: Record<string, unknown>): Promise<Inq
     const json = await res.json().catch(() => null);
     return {
       status: "error",
-      message: json?.message || "The desk could not take that note.",
+      message: json?.message || "Could not send your message. Please try again.",
     };
   }
   if (!sawNetwork) {
-    return { status: "error", message: "The travel desk could not be reached." };
+    return { status: "error", message: "Could not send your message. Please try again." };
   }
   return {
     status: "pending",
     message:
-      "No public inquiry endpoint is on the API yet. Your note was validated here and was not sent.",
+      "Your message could not be sent. Please try WhatsApp or email.",
   };
 }

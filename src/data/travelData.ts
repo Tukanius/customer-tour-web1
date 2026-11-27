@@ -1,8 +1,8 @@
 import type { AboutContent, ContactContent, SiteCopy } from "@/types/travel";
 
 export const aboutContent: AboutContent = {
-  eyebrow: "About",
-  title: "A small desk in Ulaanbaatar, and a lot of empty kilometres.",
+  eyebrow: "About Us",
+  title: "About Us",
   lede:
     "Nomad Atlas is a Mongolian expedition studio. We plan private travel — not bus groups — across the Gobi, the Altai, the central steppe, and the northern lakes.",
   mission: [
@@ -10,7 +10,7 @@ export const aboutContent: AboutContent = {
     "We are based in the capital and spend the season on the road: dune camps in the south, horse country in the west, grassland rivers in the Khangai, and larch shores on Khuvsgul. The atlas is a working map, not a brochure of borrowed pictures.",
   ],
   reasonsEyebrow: "Why travel with us",
-  reasonsTitle: "Local hands, a flexible line, and a clear price.",
+  reasonsTitle: "Why travel with us",
   reasons: [
     {
       title: "Local guides and drivers",
@@ -30,7 +30,7 @@ export const aboutContent: AboutContent = {
     },
   ],
   stepsEyebrow: "How a trip is made",
-  stepsTitle: "Three steps from a month to a road.",
+  stepsTitle: "How a trip is made",
   steps: [
     {
       number: 1,
@@ -51,10 +51,9 @@ export const aboutContent: AboutContent = {
 };
 
 export const contactContent: ContactContent = {
-  eyebrow: "Contact",
-  title: "Write from the road, or from your kitchen table.",
-  lede:
-    "A planner replies by email or WhatsApp. Use the form for a custom tour, a 4x4, or a general question.",
+  eyebrow: "Contact Us",
+  title: "Contact Us",
+  lede: "Contact us for tour inquiries, car rentals, or general questions.",
   channels: {
     email: {
       label: "Email",
@@ -85,36 +84,34 @@ export const contactContent: ContactContent = {
     topicPlaceholder: "Choose a topic",
     messageLabel: "Message",
     messagePlaceholder: "Dates, group size, places, or the vehicle you have in mind…",
-    submitLabel: "Send inquiry",
-    confirmEyebrow: "Inquiry received",
+    submitLabel: "Send",
+    confirmEyebrow: "Message sent",
     confirmTitle: "Thank you, {name}. We will write back within a day.",
-    confirmBody: "Your note reached the desk.",
+    confirmBody: "We received your message.",
     confirmPendingBody:
-      "No public inquiry endpoint is on the API yet. This page validated your note; nothing was sent.",
-    editLabel: "Edit inquiry",
+      "Your message could not be sent. Please try WhatsApp or email.",
+    editLabel: "Edit message",
   },
   errors: {
     name: "Please enter your full name.",
-    contact: "Add an email or a phone / WhatsApp number.",
-    email: "That email does not look complete.",
-    topic: "Choose a topic.",
+    contact: "Add an email or phone number.",
+    email: "Please enter a valid email.",
+    topic: "Please choose a topic.",
     message: "Please add a short message.",
   },
 };
 
 export const siteCopy: SiteCopy = {
-  footerBlurb:
-    "Private journeys across Mongolia. Destinations, tours, and vehicles come from the live operator desk.",
-  footerMapLabel: "Map",
-  footerDeskLabel: "Desk",
-  copyright:
-    "© 2026 Nomad Atlas. All rights reserved. Placeholder brand for demonstration.",
+  footerBlurb: "Tours, destinations, and car rental in Mongolia.",
+  footerMapLabel: "Links",
+  footerDeskLabel: "Contact",
+  copyright: "© 2026 Nomad Atlas. All rights reserved.",
   footerLinks: [
     { href: "/", label: "Home" },
     { href: "/tours", label: "Tours" },
     { href: "/destinations", label: "Destinations" },
     { href: "/car-rent", label: "Car Rental" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
+    { href: "/about", label: "About Us" },
+    { href: "/contact", label: "Contact Us" },
   ],
 };

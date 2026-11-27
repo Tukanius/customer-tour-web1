@@ -22,6 +22,10 @@ export interface CatalogItem {
   capacity?: number;
   ownership?: string;
   durationDays?: number;
+  featured?: boolean;
+  price?: string;
+  specs: string[];
+  conditions?: string;
   stops: TourStop[];
 }
 
